@@ -1,0 +1,100 @@
+.inventario-harina {
+  display: flex;
+  gap: var(--spacing-6);
+  flex-wrap: wrap;
+}
+
+.inventario-item {
+  flex: 1;
+  min-width: 280px;
+}
+
+.inventario-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-700);
+  margin-bottom: var(--spacing-2);
+}
+
+.inventario-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-1);
+  background: var(--color-gray-100);
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius);
+}
+
+.inventario-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.inventario-btn-sm {
+  width: 40px;
+  font-size: var(--font-size-xs);
+}
+
+.inventario-btn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.inventario-btn:disabled {
+  background: var(--color-gray-300);
+  cursor: not-allowed;
+}
+
+.inventario-input {
+  width: 70px;
+  height: 36px;
+  text-align: center;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--border-radius);
+  background: var(--color-white);
+}
+
+.inventario-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.inventario-input:disabled {
+  background: var(--color-gray-200);
+  color: var(--color-gray-500);
+}
+
+/* Ocultar flechas del input number */
+.inventario-input::-webkit-outer-spin-button,
+.inventario-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inventario-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+@media (max-width: 640px) {
+  .inventario-item {
+    min-width: 100%;
+  }
+
+  .inventario-control {
+    flex-wrap: wrap;
+  }
+}

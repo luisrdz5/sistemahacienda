@@ -1,0 +1,274 @@
+.semanal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+}
+
+.semanal-periodo {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-gray-700);
+  min-width: 200px;
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.stat-card {
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-4);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-2);
+}
+
+.stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.stat-success {
+  color: var(--color-success);
+}
+
+.stat-error {
+  color: var(--color-error);
+}
+
+.semanal-tabla {
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--spacing-6);
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.tabla th,
+.tabla td {
+  padding: var(--spacing-3);
+  text-align: center;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.tabla th {
+  background: var(--color-gray-100);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  position: sticky;
+  top: 0;
+}
+
+.col-dia {
+  text-align: left !important;
+  min-width: 120px;
+}
+
+.col-total {
+  background: var(--color-gray-50);
+  font-weight: 600;
+}
+
+.col-virtual {
+  background: #f0f9ff;
+}
+
+.tag-virtual {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: normal;
+  color: var(--color-primary);
+}
+
+.dia-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dia-nombre {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.dia-fecha {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+.sucursal-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+}
+
+.sucursal-cell.virtual {
+  justify-content: center;
+}
+
+.sucursal-cell .venta {
+  color: var(--color-success);
+  font-weight: 500;
+}
+
+.sucursal-cell .gasto {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+}
+
+.sucursal-cell .utilidad {
+  font-weight: 600;
+  padding-top: 2px;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.sucursal-cell .utilidad.positive {
+  color: var(--color-success);
+}
+
+.sucursal-cell .utilidad.negative {
+  color: var(--color-error);
+}
+
+.totales-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+}
+
+.totales-cell .venta {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.totales-cell .gasto {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+}
+
+.totales-cell .utilidad {
+  font-weight: 700;
+  font-size: var(--font-size-base);
+  padding-top: 2px;
+  border-top: 1px solid var(--color-gray-300);
+}
+
+.totales-cell .utilidad.positive {
+  color: var(--color-success);
+}
+
+.totales-cell .utilidad.negative {
+  color: var(--color-error);
+}
+
+.row-totales {
+  background: var(--color-gray-100);
+}
+
+.row-totales td {
+  border-top: 2px solid var(--color-gray-300);
+  font-weight: 600;
+}
+
+.row-totales .positive {
+  color: var(--color-success);
+}
+
+.row-totales .negative {
+  color: var(--color-error);
+}
+
+.row-totales .gasto {
+  color: var(--color-error);
+}
+
+.semanal-leyenda {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-6);
+  flex-wrap: wrap;
+}
+
+.leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+.leyenda-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.leyenda-color.venta {
+  background: var(--color-success);
+}
+
+.leyenda-color.gasto {
+  background: var(--color-error);
+}
+
+.leyenda-color.utilidad {
+  background: var(--color-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .semanal-nav {
+    flex-direction: column;
+  }
+
+  .semanal-nav .btn {
+    width: 100%;
+  }
+}
+
+.loading-inline {
+  text-align: center;
+  padding: var(--spacing-8);
+  color: var(--color-gray-500);
+}
+
+.alert {
+  padding: var(--spacing-3);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-4);
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}

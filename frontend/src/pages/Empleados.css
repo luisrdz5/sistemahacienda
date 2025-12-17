@@ -1,0 +1,95 @@
+.empleados-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.empleados-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.section-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-gray-700);
+  margin: 0;
+  padding-bottom: var(--spacing-2);
+  border-bottom: 2px solid var(--color-gray-200);
+}
+
+.empleados-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.empleado-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.empleado-card.empleado-inactivo {
+  opacity: 0.6;
+  background-color: var(--color-gray-100);
+}
+
+.empleado-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+}
+
+.empleado-header h3 {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+}
+
+.empleado-sucursal {
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.empleado-actions {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.page-actions .form-input {
+  min-width: 200px;
+}
+
+.empty-message {
+  color: var(--color-gray-500);
+  font-style: italic;
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--spacing-4);
+}
+
+@media (max-width: 640px) {
+  .page-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-2);
+  }
+
+  .page-actions .form-input {
+    min-width: unset;
+  }
+
+  .empleados-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,7 +1,29 @@
 {
   "permissions": {
     "allow": [
-      "Bash(claude init:*)"
+      "Bash(claude init:*)",
+      "Bash(tree:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(npm install:*)",
+      "Bash(wc:*)",
+      "Bash(git -C /Users/luisrodriguez/Documents/labs/hacienda log --oneline)",
+      "Bash(grep:*)",
+      "Bash(docker-compose:*)",
+      "Bash(npx sequelize-cli:*)",
+      "Bash(npm run dev:*)",
+      "Bash(cat:*)",
+      "Bash(npm start)",
+      "Bash(curl:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NTk5OTE4OSwiZXhwIjoxNzY2NjAzOTg5fQ.CYEashkd47e1E5xQTCfPYKVvJE1x3y3yD2HruCChGcc\")",
+      "Bash(python3:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(echo \"=== 1. Cargar empleados (como hace la página) ===\" curl -s http://localhost:3001/api/empleados -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(echo -e \"\\n=== 2. Cargar sucursales (para el dropdown) ===\" curl -s http://localhost:3001/api/sucursales -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(echo -e \"\\n=== 3. Crear empleado nuevo ===\" curl -s http://localhost:3001/api/empleados -X POST -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -d '{\"\"\"\"nombre\"\"\"\":\"\"\"\"Empleado Test\"\"\"\",\"\"\"\"sucursalId\"\"\"\":1}')",
+      "Bash(echo -e \"\\n\\n=== 4. Verificar empleado creado ===\" curl -s http://localhost:3001/api/empleados/8 -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(echo -e \"\\n\\n=== 5. Editar empleado ===\" curl -s http://localhost:3001/api/empleados/8 -X PUT -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -d '{\"\"\"\"nombre\"\"\"\":\"\"\"\"Empleado Test Editado\"\"\"\"}')",
+      "Bash(echo -e \"\\n\\n=== 6. Eliminar (desactivar) empleado ===\" curl -s http://localhost:3001/api/empleados/8 -X DELETE -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NTk5OTE4OSwiZXhwIjoxNzY2NjAzOTg5fQ.CYEashkd47e1E5xQTCfPYKVvJE1x3y3yD2HruCChGcc\" curl -s http://localhost:3001/api/dashboard/resumen-semanal -H \"Authorization: Bearer $TOKEN\")"
     ]
   }
 }
