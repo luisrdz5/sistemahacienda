@@ -1,21 +1,28 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
-- main
+  - main
 
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
+variables:
+  SERVER_IP: '78.13.85.34'
+  SERVER_USER: 'ubuntu'
 
-- script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
+stages:
+  - stage: Deploy
+    displayName: 'Deploy a Produccion'
+    jobs:
+      - job: DeployToServer
+        displayName: 'Desplegar en servidor'
+        steps:
+          # Instalar llave SSH desde variable secreta
+          - task: InstallSSHKey@0
+            displayName: 'Instalar llave SSH'
+            inputs:
+              knownHostsEntry: $(KNOWN_HOSTS)
+              sshKeySecureFile: 'server-ssh-key'
+
+          # Ejecutar deploy en servidor remoto
+          - script: |
+              ssh -o StrictHostKeyChecking=no $(SERVER_USER)@$(SERVER_IP) "cd ~/hacienda && ./deploy.sh"
+            displayName: 'Ejecutar deploy.sh en servidor'
