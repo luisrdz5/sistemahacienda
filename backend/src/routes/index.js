@@ -10,6 +10,11 @@ import usuariosRoutes from './usuarios.js';
 
 const router = Router();
 
+// Health check para Docker/Load Balancer
+router.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 router.use('/auth', authRoutes);
 router.use('/sucursales', sucursalesRoutes);
 router.use('/cortes', cortesRoutes);

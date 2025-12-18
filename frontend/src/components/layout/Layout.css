@@ -20,4 +20,8 @@
   .layout {
     flex-direction: column;
   }
+
+  .layout-content {
+    padding-bottom: 80px; /* Espacio para el menú fijo inferior */
+  }
 }

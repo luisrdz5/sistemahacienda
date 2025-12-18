@@ -35,33 +35,6 @@ router.post('/login', authController.login);
 
 /**
  * @swagger
- * /api/auth/google:
- *   post:
- *     summary: Iniciar sesión con Google
- *     tags: [Auth]
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - credential
- *             properties:
- *               credential:
- *                 type: string
- *                 description: Token de Google
- *     responses:
- *       200:
- *         description: Login exitoso
- *       401:
- *         description: Token inválido
- */
-router.post('/google', authController.googleLogin);
-
-/**
- * @swagger
  * /api/auth/me:
  *   get:
  *     summary: Obtener usuario actual

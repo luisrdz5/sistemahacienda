@@ -23,7 +23,25 @@
       "Bash(echo -e \"\\n\\n=== 4. Verificar empleado creado ===\" curl -s http://localhost:3001/api/empleados/8 -H \"Authorization: Bearer $TOKEN\")",
       "Bash(echo -e \"\\n\\n=== 5. Editar empleado ===\" curl -s http://localhost:3001/api/empleados/8 -X PUT -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -d '{\"\"\"\"nombre\"\"\"\":\"\"\"\"Empleado Test Editado\"\"\"\"}')",
       "Bash(echo -e \"\\n\\n=== 6. Eliminar (desactivar) empleado ===\" curl -s http://localhost:3001/api/empleados/8 -X DELETE -H \"Authorization: Bearer $TOKEN\")",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NTk5OTE4OSwiZXhwIjoxNzY2NjAzOTg5fQ.CYEashkd47e1E5xQTCfPYKVvJE1x3y3yD2HruCChGcc\" curl -s http://localhost:3001/api/dashboard/resumen-semanal -H \"Authorization: Bearer $TOKEN\")"
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NTk5OTE4OSwiZXhwIjoxNzY2NjAzOTg5fQ.CYEashkd47e1E5xQTCfPYKVvJE1x3y3yD2HruCChGcc\" curl -s http://localhost:3001/api/dashboard/resumen-semanal -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(docker:*)",
+      "Bash(docker compose:*)",
+      "Bash(echo:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(dig:*)",
+      "Bash(nslookup:*)",
+      "Bash(host db.lyzgxbtxzzpfbfhqkkpe.supabase.co 8.8.8.8)",
+      "Bash(host:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAxOTczNSwiZXhwIjoxNzY2NjI0NTM1fQ.hN0312UTim2BzkPvYZ_45PZ6CBdE6fYPimuEP85wD_w\")",
+      "Bash(lsof:*)",
+      "Bash(chmod:*)",
+      "Bash(ssh:*)",
+      "Bash(rsync:*)",
+      "Bash(/Users/luisrodriguez/Documents/labs/hacienda/ )",
+      "Bash(ubuntu@78.13.85.34:~/hacienda/)",
+      "Bash(/Users/luisrodriguez/Documents/labs/hacienda/frontend/src/components/layout/Layout.css )",
+      "Bash(ubuntu@78.13.85.34:~/hacienda/frontend/src/components/layout/Layout.css)",
+      "Bash(git add:*)"
     ]
   }
 }
