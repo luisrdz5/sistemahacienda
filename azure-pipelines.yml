@@ -17,8 +17,9 @@ stages:
         steps:
           # Crear archivo de llave SSH desde variable secreta (base64)
           - script: |
-              echo "$(SSH_PRIVATE_KEY_BASE64)" | base64 -d > ~/ssh_key.pem
+              printf '%s' "$(SSH_PRIVATE_KEY_BASE64)" | base64 -d > ~/ssh_key.pem
               chmod 600 ~/ssh_key.pem
+              echo "SSH key file created, size: $(wc -c < ~/ssh_key.pem) bytes"
             displayName: 'Configurar llave SSH'
 
           # Ejecutar deploy en servidor remoto
