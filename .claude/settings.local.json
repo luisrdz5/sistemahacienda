@@ -41,7 +41,9 @@
       "Bash(ubuntu@78.13.85.34:~/hacienda/)",
       "Bash(/Users/luisrodriguez/Documents/labs/hacienda/frontend/src/components/layout/Layout.css )",
       "Bash(ubuntu@78.13.85.34:~/hacienda/frontend/src/components/layout/Layout.css)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
