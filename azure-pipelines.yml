@@ -15,9 +15,9 @@ stages:
       - job: DeployToServer
         displayName: 'Desplegar en servidor'
         steps:
-          # Crear archivo de llave SSH desde variable secreta
+          # Crear archivo de llave SSH desde variable secreta (base64)
           - script: |
-              echo "$(SSH_PRIVATE_KEY)" > ~/ssh_key.pem
+              echo "$(SSH_PRIVATE_KEY_BASE64)" | base64 -d > ~/ssh_key.pem
               chmod 600 ~/ssh_key.pem
             displayName: 'Configurar llave SSH'
 
