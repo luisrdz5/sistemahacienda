@@ -44,7 +44,12 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyNzQyNiwiZXhwIjoxNzY2NjMyMjI2fQ.Gsbi-Ir9DJG2jsmi6Z9hndwNZIT-zejheSDqNoQ-07c\" curl -s \"https://lahacienda.online/api/dashboard/resumen-semanal\" -H \"Authorization: Bearer $TOKEN\")"
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyNzQyNiwiZXhwIjoxNzY2NjMyMjI2fQ.Gsbi-Ir9DJG2jsmi6Z9hndwNZIT-zejheSDqNoQ-07c\" curl -s \"https://lahacienda.online/api/dashboard/resumen-semanal\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyNzQyNiwiZXhwIjoxNzY2NjMyMjI2fQ.Gsbi-Ir9DJG2jsmi6Z9hndwNZIT-zejheSDqNoQ-07c\" curl -s \"https://lahacienda.online/api/dashboard/auditoria?mes=12&anio=2025\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\" curl -s \"https://lahacienda.online/api/dashboard/auditoria?mes=12&anio=2025\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\" curl -s \"https://lahacienda.online/api/dashboard/resumen-semanal?fechaInicio=2025-12-15\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\" curl -s \"https://lahacienda.online/api/dashboard/resumen-semanal?fechaInicio=2025-12-14\" -H \"Authorization: Bearer $TOKEN\")"
     ]
   }
 }

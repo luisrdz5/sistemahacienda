@@ -174,13 +174,16 @@ export const getAuditoria = async (req, res, next) => {
     cortes.forEach(corte => {
       const key = `${corte.fecha}_${corte.sucursalId}`;
       const totalGastos = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+      const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
+      // Calcular venta como efectivoCaja + gastos (fórmula del negocio)
+      const ventaCalculada = efectivoCaja + totalGastos;
       cortesMap[key] = {
         id: corte.id,
         estado: corte.estado,
-        ventaTotal: parseFloat(corte.ventaTotal || 0),
-        efectivoCaja: parseFloat(corte.efectivoCaja || 0),
+        ventaTotal: ventaCalculada,
+        efectivoCaja,
         totalGastos,
-        utilidad: parseFloat(corte.ventaTotal || 0) - totalGastos
+        utilidad: efectivoCaja // utilidad = venta - gastos = efectivoCaja
       };
     });
 
