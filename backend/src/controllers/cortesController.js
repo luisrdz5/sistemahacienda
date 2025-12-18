@@ -159,7 +159,10 @@ export const update = async (req, res, next) => {
 export const finalizar = async (req, res, next) => {
   try {
     const corte = await Corte.findByPk(req.params.id, {
-      include: [{ model: Gasto, as: 'gastos' }]
+      include: [
+        { model: Gasto, as: 'gastos' },
+        { model: Sucursal, as: 'sucursal' }
+      ]
     });
 
     if (!corte) {
@@ -170,7 +173,18 @@ export const finalizar = async (req, res, next) => {
       return res.status(400).json({ error: 'El corte ya está completado' });
     }
 
-    await corte.update({ estado: 'completado' });
+    // Calcular ventaTotal = efectivoCaja + totalGastos
+    const totalGastos = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+    const isVirtual = corte.sucursal?.tipo === 'virtual';
+
+    const updateData = { estado: 'completado' };
+
+    // Solo calcular ventaTotal para sucursales físicas
+    if (!isVirtual) {
+      updateData.ventaTotal = parseFloat(corte.efectivoCaja || 0) + totalGastos;
+    }
+
+    await corte.update(updateData);
 
     res.json({ message: 'Corte finalizado', corte });
   } catch (error) {
