@@ -4,10 +4,6 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-variables:
-  SERVER_IP: '78.13.85.34'
-  SERVER_USER: 'ubuntu'
-
 stages:
   - stage: Deploy
     displayName: 'Deploy a Produccion'
@@ -15,20 +11,10 @@ stages:
       - job: DeployToServer
         displayName: 'Desplegar en servidor'
         steps:
-          # Crear archivo de llave SSH desde variable secreta (base64)
-          - script: |
-              printf '%s' "$(SSH_PRIVATE_KEY_BASE64)" | base64 -d > ~/ssh_key.pem
-              chmod 600 ~/ssh_key.pem
-              echo "SSH key file created, size: $(wc -c < ~/ssh_key.pem) bytes"
-            displayName: 'Configurar llave SSH'
-
-          # Ejecutar deploy en servidor remoto
-          - script: |
-              ssh -i ~/ssh_key.pem -o StrictHostKeyChecking=no $(SERVER_USER)@$(SERVER_IP) "cd ~/hacienda && ./deploy.sh"
-            displayName: 'Ejecutar deploy.sh en servidor'
-
-          # Limpiar llave
-          - script: |
-              rm -f ~/ssh_key.pem
-            displayName: 'Limpiar llave SSH'
-            condition: always()
+          - task: SSH@0
+            displayName: 'Ejecutar deploy en servidor'
+            inputs:
+              sshEndpoint: 'lahacienda Online'
+              runOptions: 'commands'
+              commands: 'cd ~/hacienda && ./deploy.sh'
+              readyTimeout: '20000'
