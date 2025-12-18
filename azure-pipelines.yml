@@ -15,14 +15,19 @@ stages:
       - job: DeployToServer
         displayName: 'Desplegar en servidor'
         steps:
-          # Instalar llave SSH desde variable secreta
-          - task: InstallSSHKey@0
-            displayName: 'Instalar llave SSH'
-            inputs:
-              knownHostsEntry: $(KNOWN_HOSTS)
-              sshKeySecureFile: 'server-ssh-key'
+          # Crear archivo de llave SSH desde variable secreta
+          - script: |
+              echo "$(SSH_PRIVATE_KEY)" > ~/ssh_key.pem
+              chmod 600 ~/ssh_key.pem
+            displayName: 'Configurar llave SSH'
 
           # Ejecutar deploy en servidor remoto
           - script: |
-              ssh -o StrictHostKeyChecking=no $(SERVER_USER)@$(SERVER_IP) "cd ~/hacienda && ./deploy.sh"
+              ssh -i ~/ssh_key.pem -o StrictHostKeyChecking=no $(SERVER_USER)@$(SERVER_IP) "cd ~/hacienda && ./deploy.sh"
             displayName: 'Ejecutar deploy.sh en servidor'
+
+          # Limpiar llave
+          - script: |
+              rm -f ~/ssh_key.pem
+            displayName: 'Limpiar llave SSH'
+            condition: always()
