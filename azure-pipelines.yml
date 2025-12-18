@@ -16,5 +16,5 @@ stages:
             inputs:
               sshEndpoint: 'lahacienda Online'
               runOptions: 'commands'
-              commands: 'cd ~/hacienda && ./deploy.sh'
+              commands: 'cd ~/hacienda && ./deploy.sh 2>&1'
               readyTimeout: '20000'

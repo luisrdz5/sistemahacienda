@@ -263,15 +263,14 @@ export const getAuditoria = async (req, res, next) => {
  */
 export const getResumenSemanal = async (req, res, next) => {
   try {
-    // Calcular inicio de semana (lunes)
+    // Calcular inicio de semana (domingo)
     let fechaInicio = req.query.fechaInicio;
     if (!fechaInicio) {
       const today = new Date();
-      const dayOfWeek = today.getDay();
-      const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      const monday = new Date(today);
-      monday.setDate(today.getDate() - diff);
-      fechaInicio = monday.toISOString().split('T')[0];
+      const dayOfWeek = today.getDay(); // 0 = domingo
+      const sunday = new Date(today);
+      sunday.setDate(today.getDate() - dayOfWeek);
+      fechaInicio = sunday.toISOString().split('T')[0];
     }
 
     const startDate = new Date(fechaInicio);
