@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as pedidosController from '../controllers/pedidosController.js';
-import { authenticate, canManagePedidos, isAdminRepartidor } from '../middlewares/auth.js';
+import { authenticate, canManagePedidos, canEditPedidos, isAdminRepartidor } from '../middlewares/auth.js';
 
 const router = Router();
 
@@ -123,7 +123,7 @@ router.get('/:id', authenticate, canManagePedidos, pedidosController.getById);
  *       201:
  *         description: Pedido creado
  */
-router.post('/', authenticate, canManagePedidos, pedidosController.create);
+router.post('/', authenticate, canEditPedidos, pedidosController.create);
 
 /**
  * @swagger
@@ -141,7 +141,25 @@ router.post('/', authenticate, canManagePedidos, pedidosController.create);
  *       200:
  *         description: Pedido actualizado
  */
-router.put('/:id', authenticate, canManagePedidos, pedidosController.update);
+router.put('/:id', authenticate, canEditPedidos, pedidosController.update);
+
+/**
+ * @swagger
+ * /api/pedidos/{id}/despachar:
+ *   put:
+ *     summary: Marcar pedido como en camino (sale de sucursal)
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pedido en camino
+ */
+router.put('/:id/despachar', authenticate, canManagePedidos, pedidosController.despachar);
 
 /**
  * @swagger

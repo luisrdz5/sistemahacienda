@@ -252,6 +252,29 @@ export const update = async (req, res, next) => {
 };
 
 /**
+ * Marcar pedido como en camino (despachado de sucursal)
+ */
+export const despachar = async (req, res, next) => {
+  try {
+    const pedido = await Pedido.findByPk(req.params.id);
+
+    if (!pedido) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    if (pedido.estado !== 'pendiente') {
+      return res.status(400).json({ error: 'Solo se pueden despachar pedidos pendientes' });
+    }
+
+    await pedido.update({ estado: 'en_camino' });
+
+    res.json({ message: 'Pedido marcado como en camino', pedido });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Marcar pedido como entregado
  */
 export const entregar = async (req, res, next) => {
@@ -262,8 +285,8 @@ export const entregar = async (req, res, next) => {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
 
-    if (pedido.estado !== 'pendiente') {
-      return res.status(400).json({ error: 'Solo se pueden entregar pedidos pendientes' });
+    if (!['pendiente', 'en_camino'].includes(pedido.estado)) {
+      return res.status(400).json({ error: 'Solo se pueden entregar pedidos pendientes o en camino' });
     }
 
     await pedido.update({ estado: 'entregado' });
@@ -367,6 +390,7 @@ export const getResumenDia = async (req, res, next) => {
       fecha: fechaConsulta,
       totalPedidos: pedidos.length,
       pedidosPendientes: pedidos.filter(p => p.estado === 'pendiente').length,
+      pedidosEnCamino: pedidos.filter(p => p.estado === 'en_camino').length,
       pedidosEntregados: pedidos.filter(p => p.estado === 'entregado').length,
       pedidosCancelados: pedidos.filter(p => p.estado === 'cancelado').length,
       montoTotal: pedidos.reduce((sum, p) => sum + parseFloat(p.total || 0), 0),

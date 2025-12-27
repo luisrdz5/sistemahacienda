@@ -74,12 +74,25 @@ export const isRepartidor = (req, res, next) => {
 };
 
 /**
- * Middleware para verificar si puede gestionar pedidos
+ * Middleware para verificar si puede gestionar pedidos (ver, cambiar estado)
  */
 export const canManagePedidos = (req, res, next) => {
-  const rolesPermitidos = ['admin', 'administrador_repartidor', 'repartidor'];
+  const rolesPermitidos = ['admin', 'administrador_repartidor', 'repartidor', 'encargado'];
   if (!rolesPermitidos.includes(req.user?.rol)) {
     return res.status(403).json({ error: 'Acceso denegado. No tiene permisos para gestionar pedidos' });
+  }
+  next();
+};
+
+/**
+ * Middleware para verificar si puede crear/editar pedidos y precios
+ * Solo admin, encargado y admin_repartidor pueden crear/editar pedidos
+ * Repartidor solo puede ver y cambiar estado
+ */
+export const canEditPedidos = (req, res, next) => {
+  const rolesPermitidos = ['admin', 'administrador_repartidor', 'encargado'];
+  if (!rolesPermitidos.includes(req.user?.rol)) {
+    return res.status(403).json({ error: 'Acceso denegado. No tiene permisos para editar pedidos' });
   }
   next();
 };

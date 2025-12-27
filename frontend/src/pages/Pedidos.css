@@ -1,6 +1,6 @@
 .pedidos-resumen {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: var(--spacing-3);
   margin-bottom: var(--spacing-4);
 }
@@ -31,6 +31,10 @@
 
 .resumen-value.success {
   color: var(--color-success);
+}
+
+.resumen-value.info {
+  color: var(--color-primary);
 }
 
 .pedidos-filtros {
@@ -65,6 +69,10 @@
 .pedido-card.estado-cancelado {
   border-left-color: var(--color-error);
   opacity: 0.6;
+}
+
+.pedido-card.estado-en_camino {
+  border-left-color: var(--color-primary);
 }
 
 .pedido-header {
@@ -257,6 +265,65 @@
   position: relative;
 }
 
+/* Cliente selector con boton de agregar */
+.cliente-selector {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.cliente-selector .form-input {
+  flex: 1;
+}
+
+.cliente-direccion-hint {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-1);
+}
+
+.form-group-cliente {
+  flex: 1;
+}
+
+/* Formulario nuevo cliente inline */
+.nuevo-cliente-form {
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+  margin-bottom: var(--spacing-3);
+}
+
+.nuevo-cliente-form h4 {
+  margin: 0 0 var(--spacing-3) 0;
+  font-size: var(--font-size-base);
+  color: var(--color-gray-700);
+}
+
+.nuevo-cliente-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+}
+
+/* Badge info para estado en_camino */
+.badge-info {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-info {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+}
+
+.btn-info:hover {
+  background-color: var(--color-primary-dark, #1d4ed8);
+}
+
 @media (max-width: 768px) {
   .pedidos-resumen {
     grid-template-columns: repeat(2, 1fr);
@@ -269,5 +336,13 @@
 
   .producto-subtotal {
     text-align: left;
+  }
+
+  .cliente-selector {
+    flex-direction: column;
+  }
+
+  .nuevo-cliente-form .form-row {
+    flex-direction: column;
   }
 }

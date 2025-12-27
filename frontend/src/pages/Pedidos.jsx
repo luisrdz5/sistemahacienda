@@ -19,7 +19,10 @@ function Pedidos() {
 
   const isAdmin = usuario?.rol === 'admin';
   const isAdminRepartidor = usuario?.rol === 'administrador_repartidor';
+  const isEncargado = usuario?.rol === 'encargado';
+  const isRepartidor = usuario?.rol === 'repartidor';
   const canManageAll = isAdmin || isAdminRepartidor;
+  const canEdit = isAdmin || isAdminRepartidor || isEncargado;
 
   useEffect(() => {
     cargarDatosBase();
@@ -74,6 +77,7 @@ function Pedidos() {
       setShowForm(false);
       setEditingPedido(null);
       cargarPedidos();
+      cargarDatosBase(); // Recargar clientes por si se agregó uno nuevo
     } catch (error) {
       alert(error.message);
     }
@@ -82,6 +86,15 @@ function Pedidos() {
   const handleEdit = (pedido) => {
     setEditingPedido(pedido);
     setShowForm(true);
+  };
+
+  const handleDespachar = async (pedido) => {
+    try {
+      await api.put(`/pedidos/${pedido.id}/despachar`);
+      cargarPedidos();
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const handleEntregar = async (pedido) => {
@@ -113,10 +126,21 @@ function Pedidos() {
   const getEstadoBadge = (estado) => {
     const badges = {
       pendiente: 'badge-warning',
+      en_camino: 'badge-info',
       entregado: 'badge-success',
       cancelado: 'badge-error'
     };
     return badges[estado] || 'badge-secondary';
+  };
+
+  const getEstadoLabel = (estado) => {
+    const labels = {
+      pendiente: 'Pendiente',
+      en_camino: 'En Camino',
+      entregado: 'Entregado',
+      cancelado: 'Cancelado'
+    };
+    return labels[estado] || estado;
   };
 
   if (loading && pedidos.length === 0) {
@@ -127,9 +151,11 @@ function Pedidos() {
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">Pedidos</h1>
-        <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-          + Nuevo Pedido
-        </button>
+        {canEdit && (
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+            + Nuevo Pedido
+          </button>
+        )}
       </div>
 
       {resumen && (
@@ -141,6 +167,10 @@ function Pedidos() {
           <div className="resumen-card">
             <span className="resumen-label">Pendientes</span>
             <span className="resumen-value warning">{resumen.pedidosPendientes}</span>
+          </div>
+          <div className="resumen-card">
+            <span className="resumen-label">En Camino</span>
+            <span className="resumen-value info">{resumen.pedidosEnCamino || 0}</span>
           </div>
           <div className="resumen-card">
             <span className="resumen-label">Entregados</span>
@@ -173,6 +203,7 @@ function Pedidos() {
           >
             <option value="">Todos</option>
             <option value="pendiente">Pendientes</option>
+            <option value="en_camino">En Camino</option>
             <option value="entregado">Entregados</option>
             <option value="cancelado">Cancelados</option>
           </select>
@@ -205,7 +236,7 @@ function Pedidos() {
                 <div className="pedido-info">
                   <h3>{pedido.cliente?.nombre || 'Sin cliente'}</h3>
                   <span className={`badge ${getEstadoBadge(pedido.estado)}`}>
-                    {pedido.estado}
+                    {getEstadoLabel(pedido.estado)}
                   </span>
                 </div>
                 <div className="pedido-total">{formatMoney(pedido.total)}</div>
@@ -234,17 +265,25 @@ function Pedidos() {
                 {pedido.estado === 'pendiente' && (
                   <>
                     <button
+                      className="btn btn-info btn-sm"
+                      onClick={() => handleDespachar(pedido)}
+                    >
+                      Despachar
+                    </button>
+                    <button
                       className="btn btn-success btn-sm"
                       onClick={() => handleEntregar(pedido)}
                     >
                       Entregar
                     </button>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => handleEdit(pedido)}
-                    >
-                      Editar
-                    </button>
+                    {canEdit && (
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => handleEdit(pedido)}
+                      >
+                        Editar
+                      </button>
+                    )}
                     {canManageAll && (
                       <button
                         className="btn btn-danger btn-sm"
@@ -254,6 +293,14 @@ function Pedidos() {
                       </button>
                     )}
                   </>
+                )}
+                {pedido.estado === 'en_camino' && (
+                  <button
+                    className="btn btn-success btn-sm"
+                    onClick={() => handleEntregar(pedido)}
+                  >
+                    Marcar Entregado
+                  </button>
                 )}
               </div>
             </div>
@@ -272,19 +319,26 @@ function Pedidos() {
             setShowForm(false);
             setEditingPedido(null);
           }}
+          onClienteCreated={(nuevoCliente) => {
+            setClientes(prev => [...prev, nuevoCliente]);
+          }}
         />
       )}
     </div>
   );
 }
 
-function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClose }) {
+function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClose, onClienteCreated }) {
   const [clienteId, setClienteId] = useState(pedido?.clienteId || '');
   const [repartidorId, setRepartidorId] = useState(pedido?.repartidorId || '');
   const [notas, setNotas] = useState(pedido?.notas || '');
   const [detalles, setDetalles] = useState([]);
-  const [searchCliente, setSearchCliente] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showNuevoCliente, setShowNuevoCliente] = useState(false);
+  const [nuevoClienteNombre, setNuevoClienteNombre] = useState('');
+  const [nuevoClienteTelefono, setNuevoClienteTelefono] = useState('');
+  const [nuevoClienteDireccion, setNuevoClienteDireccion] = useState('');
+  const [creandoCliente, setCreandoCliente] = useState(false);
 
   useEffect(() => {
     if (pedido?.detalles) {
@@ -294,7 +348,6 @@ function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClo
         precioUnitario: parseFloat(d.precioUnitario)
       })));
     } else {
-      // Inicializar con todos los productos en 0
       setDetalles(productos.map(p => ({
         productoId: p.id,
         cantidad: 0,
@@ -303,17 +356,14 @@ function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClo
     }
   }, [pedido, productos]);
 
-  // Actualizar precios cuando cambia el cliente
   useEffect(() => {
     const actualizarPrecios = async () => {
       if (!clienteId) {
-        // Usar precios de lista
         setDetalles(prev => prev.map(d => {
           const producto = productos.find(p => p.id === d.productoId);
           return { ...d, precioUnitario: parseFloat(producto?.precioLista || 0) };
         }));
       } else {
-        // Obtener precios del cliente
         const cliente = clientes.find(c => c.id === parseInt(clienteId));
         if (cliente) {
           setDetalles(prev => prev.map(d => {
@@ -344,6 +394,33 @@ function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClo
     return detalles.reduce((sum, d) => sum + (d.cantidad * d.precioUnitario), 0);
   };
 
+  const handleCrearCliente = async () => {
+    if (!nuevoClienteNombre.trim()) {
+      alert('El nombre del cliente es requerido');
+      return;
+    }
+
+    setCreandoCliente(true);
+    try {
+      const nuevoCliente = await api.post('/clientes', {
+        nombre: nuevoClienteNombre.trim(),
+        telefono: nuevoClienteTelefono.trim() || null,
+        direccion: nuevoClienteDireccion.trim() || null
+      });
+
+      onClienteCreated(nuevoCliente);
+      setClienteId(nuevoCliente.id);
+      setShowNuevoCliente(false);
+      setNuevoClienteNombre('');
+      setNuevoClienteTelefono('');
+      setNuevoClienteDireccion('');
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setCreandoCliente(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -366,16 +443,14 @@ function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClo
     setLoading(false);
   };
 
-  const clientesFiltrados = clientes.filter(c =>
-    c.nombre.toLowerCase().includes(searchCliente.toLowerCase())
-  ).slice(0, 10);
-
   const formatMoney = (amount) => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN'
     }).format(amount);
   };
+
+  const clienteSeleccionado = clientes.find(c => c.id === parseInt(clienteId));
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -387,40 +462,30 @@ function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClo
 
         <form onSubmit={handleSubmit} className="modal-content">
           <div className="form-row">
-            <div className="form-group">
+            <div className="form-group form-group-cliente">
               <label className="form-label">Cliente</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Buscar cliente..."
-                value={searchCliente}
-                onChange={(e) => setSearchCliente(e.target.value)}
-              />
-              {searchCliente && (
-                <div className="cliente-dropdown">
-                  <div
-                    className="cliente-option"
-                    onClick={() => {
-                      setClienteId('');
-                      setSearchCliente('Sin cliente (precio lista)');
-                    }}
-                  >
-                    Sin cliente (precio lista)
-                  </div>
-                  {clientesFiltrados.map(c => (
-                    <div
-                      key={c.id}
-                      className="cliente-option"
-                      onClick={() => {
-                        setClienteId(c.id);
-                        setSearchCliente(c.nombre);
-                      }}
-                    >
-                      {c.nombre}
-                      {c.direccion && <span className="cliente-direccion">{c.direccion}</span>}
-                    </div>
+              <div className="cliente-selector">
+                <select
+                  className="form-input"
+                  value={clienteId}
+                  onChange={(e) => setClienteId(e.target.value)}
+                >
+                  <option value="">Sin cliente (precio lista)</option>
+                  {clientes.map(c => (
+                    <option key={c.id} value={c.id}>{c.nombre}</option>
                   ))}
-                </div>
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setShowNuevoCliente(!showNuevoCliente)}
+                  title="Agregar nuevo cliente"
+                >
+                  +
+                </button>
+              </div>
+              {clienteSeleccionado?.direccion && (
+                <span className="cliente-direccion-hint">{clienteSeleccionado.direccion}</span>
               )}
             </div>
 
@@ -438,6 +503,61 @@ function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClo
               </select>
             </div>
           </div>
+
+          {showNuevoCliente && (
+            <div className="nuevo-cliente-form">
+              <h4>Nuevo Cliente</h4>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Nombre *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={nuevoClienteNombre}
+                    onChange={(e) => setNuevoClienteNombre(e.target.value)}
+                    placeholder="Nombre del cliente"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Telefono</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={nuevoClienteTelefono}
+                    onChange={(e) => setNuevoClienteTelefono(e.target.value)}
+                    placeholder="Telefono"
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Direccion</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={nuevoClienteDireccion}
+                  onChange={(e) => setNuevoClienteDireccion(e.target.value)}
+                  placeholder="Direccion"
+                />
+              </div>
+              <div className="nuevo-cliente-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setShowNuevoCliente(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={handleCrearCliente}
+                  disabled={creandoCliente}
+                >
+                  {creandoCliente ? 'Creando...' : 'Crear Cliente'}
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="productos-pedido">
             <h4>Productos</h4>
