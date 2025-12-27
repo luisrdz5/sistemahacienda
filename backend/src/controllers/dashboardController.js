@@ -212,9 +212,15 @@ export const getAuditoria = async (req, res, next) => {
     // Estadísticas del mes
     let totalVentas = 0;
     let totalGastos = 0;
+    let totalCajaChica = 0;
+    let totalAhorro = 0;
     let cortesCompletados = 0;
     let cortesBorrador = 0;
     let cortesPendientes = 0;
+
+    // Encontrar el ID de la sucursal "Ahorro"
+    const sucursalAhorro = sucursales.find(s => s.nombre === 'Ahorro');
+    const ahorroId = sucursalAhorro?.id;
 
     for (let dia = 1; dia <= diasDelMes; dia++) {
       const fecha = new Date(anio, mes - 1, dia);
@@ -229,6 +235,16 @@ export const getAuditoria = async (req, res, next) => {
             cortesCompletados++;
             totalVentas += corteData.ventaTotal;
             totalGastos += corteData.totalGastos;
+
+            // Sumar efectivo en caja solo de sucursales físicas
+            if (sucursal.tipo === 'fisica') {
+              totalCajaChica += corteData.efectivoCaja;
+            }
+
+            // Sumar gastos de la sucursal Ahorro
+            if (sucursal.id === ahorroId) {
+              totalAhorro += corteData.totalGastos;
+            }
           } else {
             cortesBorrador++;
           }
@@ -269,6 +285,8 @@ export const getAuditoria = async (req, res, next) => {
         totalVentas,
         totalGastos,
         utilidadNeta: totalVentas - totalGastos,
+        totalCajaChica,
+        totalAhorro,
         cortesCompletados,
         cortesBorrador,
         cortesPendientes,

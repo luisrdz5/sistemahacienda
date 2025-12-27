@@ -310,6 +310,7 @@ function Captura() {
         <GastoForm
           onSubmit={agregarGasto}
           onClose={() => setShowGastoForm(false)}
+          sucursal={sucursales.find(s => s.id === parseInt(sucursalId))}
         />
       )}
     </div>

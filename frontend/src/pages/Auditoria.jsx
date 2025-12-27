@@ -124,7 +124,7 @@ function Auditoria() {
       </div>
 
       {/* Estadísticas del mes */}
-      <div className="stats-grid">
+      <div className="stats-grid stats-grid-6">
         <div className="stat-card">
           <span className="stat-label">Completitud</span>
           <span className="stat-value">{estadisticas.porcentajeCompletitud || 0}%</span>
@@ -148,6 +148,14 @@ function Auditoria() {
           <span className={`stat-value ${estadisticas.utilidadNeta >= 0 ? 'stat-success' : 'stat-error'}`}>
             {formatMoney(estadisticas.utilidadNeta)}
           </span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Caja Chica</span>
+          <span className="stat-value stat-info">{formatMoney(estadisticas.totalCajaChica)}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Ahorro</span>
+          <span className="stat-value stat-primary">{formatMoney(estadisticas.totalAhorro)}</span>
         </div>
       </div>
 

@@ -10,6 +10,16 @@
   .stats-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+
+  .stats-grid.stats-grid-6 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-grid.stats-grid-6 {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
 
 .stat-card {
@@ -39,6 +49,14 @@
 
 .stat-value.stat-error {
   color: var(--color-error);
+}
+
+.stat-value.stat-info {
+  color: #0ea5e9;
+}
+
+.stat-value.stat-primary {
+  color: var(--color-primary);
 }
 
 .stat-bar {

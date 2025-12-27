@@ -61,3 +61,35 @@
   justify-content: flex-end;
   margin-top: var(--spacing-4);
 }
+
+/* Botón link para agregar nuevo */
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  padding: var(--spacing-2) 0;
+  text-decoration: none;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Formulario inline para crear nuevo item */
+.nuevo-item-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.nuevo-item-actions {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.btn-sm {
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--font-size-sm);
+}
