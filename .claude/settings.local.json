@@ -49,7 +49,18 @@
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\" curl -s \"https://lahacienda.online/api/dashboard/auditoria?mes=12&anio=2025\" -H \"Authorization: Bearer $TOKEN\")",
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\")",
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\" curl -s \"https://lahacienda.online/api/dashboard/resumen-semanal?fechaInicio=2025-12-15\" -H \"Authorization: Bearer $TOKEN\")",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\" curl -s \"https://lahacienda.online/api/dashboard/resumen-semanal?fechaInicio=2025-12-14\" -H \"Authorization: Bearer $TOKEN\")"
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\" curl -s \"https://lahacienda.online/api/dashboard/resumen-semanal?fechaInicio=2025-12-14\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2NjAyOTE0MCwiZXhwIjoxNzY2NjMzOTQwfQ.2Ut-QANw4RQhl4nGObLyniyB-3Z51tTtB-mwChtK8DM\" curl -s \"http://localhost:3001/api/dashboard/resumen-semanal\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(node -e:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBoYWNpZW5kYS5jb20iLCJyb2wiOiJhZG1pbiIsInN1Y3Vyc2FsSWQiOm51bGwsImlhdCI6MTc2Njg2Mzk5OSwiZXhwIjoxNzY3NDY4Nzk5fQ.DRvZzxpP05G39h5XUfF-PC52v5uY1FRCu2lSRIKuc5c\")",
+      "Bash(__NEW_LINE__ echo \"=== 1. PRODUCTOS ===\")",
+      "Bash(__NEW_LINE__ echo \"=== 2. CLIENTES ===\")",
+      "Bash(__NEW_LINE__ echo \"\")",
+      "Bash(__NEW_LINE__ echo \"=== 5. RESUMEN MENSUAL \\(Diciembre 2025\\) ===\")",
+      "Bash(__NEW_LINE__ echo \"=== 6. RESUMEN ANUAL \\(2025\\) ===\")",
+      "Bash(__NEW_LINE__ echo \"=== 7. CREAR CLIENTE ===\")",
+      "Bash(__NEW_LINE__ echo \"=== 8. CREAR PEDIDO ===\")",
+      "Bash(__NEW_LINE__ echo \"=== 9. MARCAR PEDIDO COMO ENTREGADO ===\")"
     ]
   }
 }

@@ -7,6 +7,10 @@ import categoriasRoutes from './categorias.js';
 import empleadosRoutes from './empleados.js';
 import dashboardRoutes from './dashboard.js';
 import usuariosRoutes from './usuarios.js';
+import productosRoutes from './productos.js';
+import clientesRoutes from './clientes.js';
+import pedidosRoutes from './pedidos.js';
+import cortesPedidosRoutes from './cortesPedidos.js';
 
 const router = Router();
 
@@ -23,5 +27,9 @@ router.use('/categorias', categoriasRoutes);
 router.use('/empleados', empleadosRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/usuarios', usuariosRoutes);
+router.use('/productos', productosRoutes);
+router.use('/clientes', clientesRoutes);
+router.use('/pedidos', pedidosRoutes);
+router.use('/cortes-pedidos', cortesPedidosRoutes);
 
 export default router;

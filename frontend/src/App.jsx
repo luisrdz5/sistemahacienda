@@ -12,11 +12,17 @@ import Sucursales from './pages/Sucursales';
 import Categorias from './pages/Categorias';
 import Empleados from './pages/Empleados';
 import ResumenSemanal from './pages/ResumenSemanal';
+import ResumenMensual from './pages/ResumenMensual';
+import ResumenAnual from './pages/ResumenAnual';
+import Productos from './pages/Productos';
+import Clientes from './pages/Clientes';
+import Pedidos from './pages/Pedidos';
+import CortePedidos from './pages/CortePedidos';
 
 // Layout
 import Layout from './components/layout/Layout';
 
-function PrivateRoute({ children, adminOnly = false }) {
+function PrivateRoute({ children, adminOnly = false, allowedRoles = [] }) {
   const { usuario, loading } = useAuth();
 
   if (loading) {
@@ -29,6 +35,10 @@ function PrivateRoute({ children, adminOnly = false }) {
 
   if (adminOnly && usuario.rol !== 'admin') {
     return <Navigate to="/captura" replace />;
+  }
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(usuario.rol)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -79,6 +89,36 @@ function App() {
         <Route path="resumen-semanal" element={
           <PrivateRoute adminOnly>
             <ResumenSemanal />
+          </PrivateRoute>
+        } />
+        <Route path="resumen-mensual" element={
+          <PrivateRoute allowedRoles={['admin', 'administrador_repartidor']}>
+            <ResumenMensual />
+          </PrivateRoute>
+        } />
+        <Route path="resumen-anual" element={
+          <PrivateRoute allowedRoles={['admin', 'administrador_repartidor']}>
+            <ResumenAnual />
+          </PrivateRoute>
+        } />
+        <Route path="productos" element={
+          <PrivateRoute allowedRoles={['admin', 'administrador_repartidor']}>
+            <Productos />
+          </PrivateRoute>
+        } />
+        <Route path="clientes" element={
+          <PrivateRoute allowedRoles={['admin', 'administrador_repartidor']}>
+            <Clientes />
+          </PrivateRoute>
+        } />
+        <Route path="pedidos" element={
+          <PrivateRoute allowedRoles={['admin', 'administrador_repartidor', 'repartidor']}>
+            <Pedidos />
+          </PrivateRoute>
+        } />
+        <Route path="corte-pedidos" element={
+          <PrivateRoute allowedRoles={['admin', 'administrador_repartidor', 'repartidor']}>
+            <CortePedidos />
           </PrivateRoute>
         } />
       </Route>

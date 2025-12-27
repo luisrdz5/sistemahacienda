@@ -50,3 +50,36 @@ export const canAccessSucursal = (req, res, next) => {
 
   next();
 };
+
+/**
+ * Middleware para verificar rol de administrador de repartidores
+ */
+export const isAdminRepartidor = (req, res, next) => {
+  const rolesPermitidos = ['admin', 'administrador_repartidor'];
+  if (!rolesPermitidos.includes(req.user?.rol)) {
+    return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de administrador de repartidores' });
+  }
+  next();
+};
+
+/**
+ * Middleware para verificar rol de repartidor
+ */
+export const isRepartidor = (req, res, next) => {
+  const rolesPermitidos = ['admin', 'administrador_repartidor', 'repartidor'];
+  if (!rolesPermitidos.includes(req.user?.rol)) {
+    return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de repartidor' });
+  }
+  next();
+};
+
+/**
+ * Middleware para verificar si puede gestionar pedidos
+ */
+export const canManagePedidos = (req, res, next) => {
+  const rolesPermitidos = ['admin', 'administrador_repartidor', 'repartidor'];
+  if (!rolesPermitidos.includes(req.user?.rol)) {
+    return res.status(403).json({ error: 'Acceso denegado. No tiene permisos para gestionar pedidos' });
+  }
+  next();
+};

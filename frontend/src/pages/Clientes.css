@@ -1,0 +1,167 @@
+.clientes-search {
+  margin-bottom: var(--spacing-4);
+}
+
+.clientes-search .form-input {
+  max-width: 400px;
+}
+
+.clientes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.cliente-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.cliente-card.cliente-inactivo {
+  opacity: 0.6;
+}
+
+.cliente-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+}
+
+.cliente-header h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.cliente-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+.cliente-info a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.cliente-info a:hover {
+  text-decoration: underline;
+}
+
+.info-icon {
+  font-size: var(--font-size-base);
+}
+
+.cliente-precios {
+  background: var(--color-gray-50);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+}
+
+.cliente-precios h4 {
+  margin: 0 0 var(--spacing-2) 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-gray-500);
+}
+
+.precios-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.precio-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+}
+
+.precio-item.precio-personalizado {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.precio-producto {
+  color: var(--color-gray-700);
+}
+
+.precio-valor {
+  font-weight: 500;
+}
+
+.cliente-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: auto;
+}
+
+/* Modal grande para formulario */
+.modal-lg {
+  max-width: 600px;
+}
+
+.form-section {
+  margin: var(--spacing-4) 0;
+  padding: var(--spacing-4);
+  background: var(--color-gray-50);
+  border-radius: var(--border-radius);
+}
+
+.form-section h4 {
+  margin: 0 0 var(--spacing-1) 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.form-help {
+  margin: 0 0 var(--spacing-3) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.precios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--spacing-3);
+}
+
+.precio-form-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.precio-label {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.precio-lista {
+  font-weight: 400;
+  color: var(--color-gray-500);
+  font-size: var(--font-size-xs);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-4);
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .precios-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -6,17 +6,42 @@ import './Sidebar.css';
 function Sidebar() {
   const { usuario } = useAuth();
   const isAdmin = usuario?.rol === 'admin';
+  const isAdminRepartidor = usuario?.rol === 'administrador_repartidor';
+  const isRepartidor = usuario?.rol === 'repartidor';
+  const canSeePedidos = isAdmin || isAdminRepartidor || isRepartidor;
+  const canSeeReportes = isAdmin || isAdminRepartidor;
 
   const menuItems = [
-    { path: '/captura', label: 'Captura Diaria', icon: '📝' },
-    { path: '/auditoria', label: 'Auditoría', icon: '📅' },
-    ...(isAdmin ? [
+    // Encargados y Admin ven captura de cortes
+    ...(!isRepartidor ? [
+      { path: '/captura', label: 'Captura Diaria', icon: '📝' },
+      { path: '/auditoria', label: 'Auditoría', icon: '📅' },
+    ] : []),
+    // Pedidos visible para repartidores, admin repartidor y admin
+    ...(canSeePedidos ? [
+      { path: '/pedidos', label: 'Pedidos', icon: '🚚' },
+      { path: '/corte-pedidos', label: 'Corte Pedidos', icon: '📋' },
+    ] : []),
+    // Reportes para admin y admin repartidor
+    ...(canSeeReportes ? [
       { path: '/dashboard', label: 'Dashboard', icon: '📊' },
       { path: '/resumen-semanal', label: 'Resumen Semanal', icon: '📈' },
+      { path: '/resumen-mensual', label: 'Resumen Mensual', icon: '📅' },
+      { path: '/resumen-anual', label: 'Resumen Anual', icon: '📆' },
+    ] : []),
+    // Catálogos solo admin
+    ...(isAdmin ? [
+      { path: '/productos', label: 'Productos', icon: '🌽' },
+      { path: '/clientes', label: 'Clientes', icon: '🧑‍🤝‍🧑' },
       { path: '/usuarios', label: 'Usuarios', icon: '👥' },
       { path: '/sucursales', label: 'Sucursales', icon: '🏪' },
       { path: '/empleados', label: 'Empleados', icon: '👷' },
       { path: '/categorias', label: 'Categorías', icon: '🏷️' }
+    ] : []),
+    // Admin repartidor puede gestionar clientes y productos
+    ...(isAdminRepartidor ? [
+      { path: '/productos', label: 'Productos', icon: '🌽' },
+      { path: '/clientes', label: 'Clientes', icon: '🧑‍🤝‍🧑' },
     ] : [])
   ];
 

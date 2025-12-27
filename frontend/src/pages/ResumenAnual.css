@@ -1,0 +1,305 @@
+.anual-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.anual-periodo {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-gray-700);
+  min-width: 100px;
+  text-align: center;
+}
+
+.stats-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.stats-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.stat-card {
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-4);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card-sm .stat-value {
+  font-size: var(--font-size-xl);
+}
+
+.stat-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-2);
+}
+
+.stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.stat-success {
+  color: var(--color-success);
+}
+
+.stat-error {
+  color: var(--color-error);
+}
+
+.stat-primary {
+  color: var(--color-primary);
+}
+
+.stat-muted {
+  color: var(--color-gray-400);
+}
+
+.card-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-4) 0;
+  color: var(--color-gray-700);
+}
+
+/* Comparativa */
+.comparativa-card {
+  margin-bottom: var(--spacing-4);
+}
+
+.comparativa-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.comparativa-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.comparativa-label {
+  min-width: 60px;
+  font-weight: 500;
+  color: var(--color-gray-600);
+}
+
+.comparativa-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.comparativa-bar {
+  height: 32px;
+  border-radius: var(--border-radius);
+  transition: width 0.5s ease;
+}
+
+.comparativa-bar.anterior {
+  background: var(--color-gray-300);
+}
+
+.comparativa-bar.actual {
+  background: var(--color-primary);
+}
+
+.comparativa-valor {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Tabla de meses */
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+.tabla-meses {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-meses th,
+.tabla-meses td {
+  padding: var(--spacing-3);
+  text-align: right;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.tabla-meses th {
+  background: var(--color-gray-100);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+.tabla-meses th:first-child,
+.tabla-meses td:first-child {
+  text-align: left;
+}
+
+.col-mes .mes-nombre {
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.col-ventas {
+  color: var(--color-success);
+}
+
+.col-gastos {
+  color: var(--color-error);
+}
+
+.col-utilidad.positive {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.col-utilidad.negative {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.col-caja {
+  color: var(--color-gray-600);
+}
+
+.col-ahorro {
+  color: var(--color-primary);
+}
+
+.row-sin-datos {
+  opacity: 0.5;
+}
+
+.row-totales {
+  background: var(--color-gray-100);
+}
+
+.row-totales td {
+  border-top: 2px solid var(--color-gray-300);
+}
+
+/* Grafico mensual */
+.chart-container {
+  padding: var(--spacing-4) 0;
+}
+
+.bar-chart-mensual {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-2);
+  height: 250px;
+  padding: 0 var(--spacing-2);
+}
+
+.bar-mes-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bar-mes {
+  width: 100%;
+  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-dark, #1d4ed8) 100%);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.5s ease;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.bar-mes-valor {
+  position: absolute;
+  top: -24px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-gray-600);
+  white-space: nowrap;
+  transform: rotate(-45deg);
+  transform-origin: bottom left;
+}
+
+.bar-mes-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-2);
+  text-transform: capitalize;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .stats-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid-4,
+  .stats-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .anual-nav {
+    flex-direction: column;
+  }
+
+  .anual-nav .btn {
+    width: 100%;
+  }
+
+  .bar-chart-mensual {
+    height: 180px;
+  }
+
+  .bar-mes-valor {
+    display: none;
+  }
+
+  .tabla-meses {
+    font-size: var(--font-size-sm);
+  }
+
+  .tabla-meses th,
+  .tabla-meses td {
+    padding: var(--spacing-2);
+  }
+}
+
+.loading-inline {
+  text-align: center;
+  padding: var(--spacing-8);
+  color: var(--color-gray-500);
+}
+
+.alert {
+  padding: var(--spacing-3);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-4);
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}

@@ -147,7 +147,7 @@ function UsuarioForm({ usuario, sucursales, onSubmit, onClose }) {
     };
 
     if (password) data.password = password;
-    if (rol === 'encargado') data.sucursalId = sucursalId;
+    if (rol === 'encargado' || rol === 'repartidor') data.sucursalId = sucursalId;
 
     await onSubmit(data);
     setLoading(false);
@@ -204,12 +204,14 @@ function UsuarioForm({ usuario, sucursales, onSubmit, onClose }) {
               value={rol}
               onChange={(e) => setRol(e.target.value)}
             >
-              <option value="encargado">Encargado</option>
-              <option value="admin">Administrador</option>
+              <option value="encargado">Encargado de Sucursal</option>
+              <option value="repartidor">Repartidor</option>
+              <option value="administrador_repartidor">Admin Repartidores</option>
+              <option value="admin">Administrador General</option>
             </select>
           </div>
 
-          {rol === 'encargado' && (
+          {(rol === 'encargado' || rol === 'repartidor') && (
             <div className="form-group">
               <label className="form-label">Sucursal</label>
               <select

@@ -433,3 +433,242 @@ export const getResumenSemanal = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Resumen mensual con KPIs consolidados
+ */
+export const getResumenMensual = async (req, res, next) => {
+  try {
+    const mes = parseInt(req.query.mes) || new Date().getMonth() + 1;
+    const anio = parseInt(req.query.anio) || new Date().getFullYear();
+
+    const primerDia = new Date(anio, mes - 1, 1);
+    const ultimoDia = new Date(anio, mes, 0);
+
+    const sucursales = await Sucursal.findAll({ where: { activa: true } });
+
+    // Obtener cortes del mes
+    const cortes = await Corte.findAll({
+      where: {
+        fecha: {
+          [Op.between]: [
+            primerDia.toISOString().split('T')[0],
+            ultimoDia.toISOString().split('T')[0]
+          ]
+        },
+        estado: 'completado'
+      },
+      include: [
+        { model: Gasto, as: 'gastos', include: [{ model: CategoriaGasto, as: 'categoria' }] },
+        { model: Sucursal, as: 'sucursal' }
+      ]
+    });
+
+    let totalVentas = 0;
+    let totalGastos = 0;
+    let totalCajaChica = 0;
+    let totalAhorro = 0;
+    const gastosPorCategoria = {};
+    const ventasPorSucursal = {};
+    const ventasPorDia = {};
+
+    const sucursalAhorro = sucursales.find(s => s.nombre === 'Ahorro');
+
+    cortes.forEach(corte => {
+      const totalGastosCorte = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+      const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
+      const ventaCalculada = corte.sucursal.tipo === 'fisica' ? efectivoCaja + totalGastosCorte : 0;
+
+      totalVentas += ventaCalculada;
+      totalGastos += totalGastosCorte;
+
+      if (corte.sucursal.tipo === 'fisica') {
+        totalCajaChica += efectivoCaja;
+      }
+
+      if (corte.sucursalId === sucursalAhorro?.id) {
+        totalAhorro += totalGastosCorte;
+      }
+
+      // Agrupar por sucursal
+      if (!ventasPorSucursal[corte.sucursalId]) {
+        ventasPorSucursal[corte.sucursalId] = {
+          nombre: corte.sucursal.nombre,
+          tipo: corte.sucursal.tipo,
+          ventas: 0,
+          gastos: 0
+        };
+      }
+      ventasPorSucursal[corte.sucursalId].ventas += ventaCalculada;
+      ventasPorSucursal[corte.sucursalId].gastos += totalGastosCorte;
+
+      // Agrupar gastos por categoría
+      corte.gastos.forEach(gasto => {
+        const catNombre = gasto.categoria?.nombre || 'Sin categoría';
+        if (!gastosPorCategoria[catNombre]) {
+          gastosPorCategoria[catNombre] = 0;
+        }
+        gastosPorCategoria[catNombre] += parseFloat(gasto.monto || 0);
+      });
+
+      // Ventas por día (para gráfico)
+      if (!ventasPorDia[corte.fecha]) {
+        ventasPorDia[corte.fecha] = 0;
+      }
+      ventasPorDia[corte.fecha] += ventaCalculada;
+    });
+
+    // Top categorías de gasto
+    const topGastos = Object.entries(gastosPorCategoria)
+      .map(([categoria, total]) => ({ categoria, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+
+    // Sucursales ordenadas
+    const sucursalesData = Object.values(ventasPorSucursal)
+      .sort((a, b) => b.ventas - a.ventas);
+
+    // Datos por día para gráfico
+    const diasData = [];
+    for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+      const fecha = new Date(anio, mes - 1, dia).toISOString().split('T')[0];
+      diasData.push({
+        fecha,
+        dia,
+        ventas: ventasPorDia[fecha] || 0
+      });
+    }
+
+    res.json({
+      mes,
+      anio,
+      nombreMes: primerDia.toLocaleDateString('es-MX', { month: 'long' }),
+      estadisticas: {
+        totalVentas,
+        totalGastos,
+        utilidadNeta: totalVentas - totalGastos,
+        totalCajaChica,
+        totalAhorro,
+        promedioVentaDiaria: totalVentas / ultimoDia.getDate(),
+        cortesCompletados: cortes.length
+      },
+      topGastos,
+      sucursales: sucursalesData,
+      ventasPorDia: diasData
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Resumen anual con comparativa por mes
+ */
+export const getResumenAnual = async (req, res, next) => {
+  try {
+    const anio = parseInt(req.query.anio) || new Date().getFullYear();
+
+    const sucursales = await Sucursal.findAll({ where: { activa: true } });
+    const sucursalAhorro = sucursales.find(s => s.nombre === 'Ahorro');
+
+    // Obtener cortes del año
+    const cortes = await Corte.findAll({
+      where: {
+        fecha: {
+          [Op.between]: [`${anio}-01-01`, `${anio}-12-31`]
+        },
+        estado: 'completado'
+      },
+      include: [
+        { model: Gasto, as: 'gastos' },
+        { model: Sucursal, as: 'sucursal' }
+      ]
+    });
+
+    // Inicializar datos por mes
+    const meses = [];
+    for (let m = 1; m <= 12; m++) {
+      meses.push({
+        mes: m,
+        nombreMes: new Date(anio, m - 1, 1).toLocaleDateString('es-MX', { month: 'short' }),
+        ventas: 0,
+        gastos: 0,
+        utilidad: 0,
+        cajaChica: 0,
+        ahorro: 0
+      });
+    }
+
+    let totalAnual = { ventas: 0, gastos: 0, cajaChica: 0, ahorro: 0 };
+
+    cortes.forEach(corte => {
+      const mesCorte = new Date(corte.fecha + 'T12:00:00').getMonth(); // 0-indexed
+      const totalGastosCorte = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+      const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
+      const ventaCalculada = corte.sucursal.tipo === 'fisica' ? efectivoCaja + totalGastosCorte : 0;
+
+      meses[mesCorte].ventas += ventaCalculada;
+      meses[mesCorte].gastos += totalGastosCorte;
+      meses[mesCorte].utilidad = meses[mesCorte].ventas - meses[mesCorte].gastos;
+
+      if (corte.sucursal.tipo === 'fisica') {
+        meses[mesCorte].cajaChica += efectivoCaja;
+      }
+
+      if (corte.sucursalId === sucursalAhorro?.id) {
+        meses[mesCorte].ahorro += totalGastosCorte;
+      }
+
+      totalAnual.ventas += ventaCalculada;
+      totalAnual.gastos += totalGastosCorte;
+      totalAnual.cajaChica += corte.sucursal.tipo === 'fisica' ? efectivoCaja : 0;
+      totalAnual.ahorro += corte.sucursalId === sucursalAhorro?.id ? totalGastosCorte : 0;
+    });
+
+    // Calcular comparativa con año anterior
+    const anioAnterior = anio - 1;
+    const cortesAnterior = await Corte.findAll({
+      where: {
+        fecha: { [Op.between]: [`${anioAnterior}-01-01`, `${anioAnterior}-12-31`] },
+        estado: 'completado'
+      },
+      include: [
+        { model: Gasto, as: 'gastos' },
+        { model: Sucursal, as: 'sucursal' }
+      ]
+    });
+
+    let totalAnterior = { ventas: 0, gastos: 0 };
+    cortesAnterior.forEach(corte => {
+      const totalGastosCorte = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+      const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
+      const ventaCalculada = corte.sucursal.tipo === 'fisica' ? efectivoCaja + totalGastosCorte : 0;
+      totalAnterior.ventas += ventaCalculada;
+      totalAnterior.gastos += totalGastosCorte;
+    });
+
+    const crecimientoVentas = totalAnterior.ventas > 0
+      ? ((totalAnual.ventas - totalAnterior.ventas) / totalAnterior.ventas * 100).toFixed(1)
+      : null;
+
+    res.json({
+      anio,
+      estadisticas: {
+        totalVentas: totalAnual.ventas,
+        totalGastos: totalAnual.gastos,
+        utilidadNeta: totalAnual.ventas - totalAnual.gastos,
+        totalCajaChica: totalAnual.cajaChica,
+        totalAhorro: totalAnual.ahorro,
+        promedioMensual: totalAnual.ventas / 12
+      },
+      comparativaAnterior: {
+        anio: anioAnterior,
+        ventasAnterior: totalAnterior.ventas,
+        crecimientoVentas: crecimientoVentas ? parseFloat(crecimientoVentas) : null
+      },
+      meses
+    });
+  } catch (error) {
+    next(error);
+  }
+};

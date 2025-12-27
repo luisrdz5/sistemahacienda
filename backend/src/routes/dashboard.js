@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as dashboardController from '../controllers/dashboardController.js';
-import { authenticate, isAdmin } from '../middlewares/auth.js';
+import { authenticate, isAdmin, isAdminRepartidor } from '../middlewares/auth.js';
 
 const router = Router();
 
@@ -112,5 +112,44 @@ router.get('/auditoria', authenticate, dashboardController.getAuditoria);
  *         description: Resumen semanal
  */
 router.get('/resumen-semanal', authenticate, isAdmin, dashboardController.getResumenSemanal);
+
+/**
+ * @swagger
+ * /api/dashboard/resumen-mensual:
+ *   get:
+ *     summary: Resumen mensual con KPIs consolidados (solo admin)
+ *     tags: [Dashboard]
+ *     parameters:
+ *       - in: query
+ *         name: mes
+ *         schema:
+ *           type: integer
+ *         description: Mes (1-12)
+ *       - in: query
+ *         name: anio
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Resumen mensual
+ */
+router.get('/resumen-mensual', authenticate, isAdminRepartidor, dashboardController.getResumenMensual);
+
+/**
+ * @swagger
+ * /api/dashboard/resumen-anual:
+ *   get:
+ *     summary: Resumen anual con comparativa por mes (solo admin)
+ *     tags: [Dashboard]
+ *     parameters:
+ *       - in: query
+ *         name: anio
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Resumen anual
+ */
+router.get('/resumen-anual', authenticate, isAdminRepartidor, dashboardController.getResumenAnual);
 
 export default router;
