@@ -269,7 +269,7 @@ function Auditoria() {
                   </span>
                 </div>
 
-                {s.estado !== 'pendiente' && (
+                {s.estado !== 'pendiente' && s.tipo !== 'virtual' && (
                   <div className="detalle-sucursal-datos">
                     <div className="dato">
                       <span className="dato-label">Venta Total</span>
@@ -289,6 +289,32 @@ function Auditoria() {
                         {formatMoney(s.utilidad)}
                       </span>
                     </div>
+                  </div>
+                )}
+
+                {/* Detalle de gastos para sucursales virtuales */}
+                {s.estado !== 'pendiente' && s.tipo === 'virtual' && (
+                  <div className="detalle-sucursal-gastos">
+                    {s.gastos && s.gastos.length > 0 ? (
+                      <>
+                        <div className="gastos-lista">
+                          {s.gastos.map((gasto, idx) => (
+                            <div key={idx} className="gasto-item">
+                              <span className="gasto-descripcion">
+                                {gasto.descripcion || gasto.categoria}
+                              </span>
+                              <span className="gasto-monto">{formatMoney(gasto.monto)}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="gastos-total">
+                          <span>Total</span>
+                          <span className="dato-error">{formatMoney(s.totalGastos)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="sin-gastos">Sin gastos registrados</p>
+                    )}
                   </div>
                 )}
 

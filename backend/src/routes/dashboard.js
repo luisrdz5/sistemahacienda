@@ -106,7 +106,7 @@ router.get('/auditoria', authenticate, dashboardController.getAuditoria);
  *         schema:
  *           type: string
  *           format: date
- *         description: Lunes de la semana (si no se provee, usa semana actual)
+ *         description: Domingo de la semana (si no se provee, usa semana actual)
  *     responses:
  *       200:
  *         description: Resumen semanal

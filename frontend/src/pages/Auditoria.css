@@ -311,6 +311,57 @@
   margin: 0;
 }
 
+/* Detalle de gastos para sucursales virtuales */
+.detalle-sucursal-gastos {
+  margin-top: var(--spacing-2);
+}
+
+.gastos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+}
+
+.gasto-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-2);
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+}
+
+.gasto-descripcion {
+  color: var(--color-gray-700);
+  flex: 1;
+}
+
+.gasto-monto {
+  font-weight: 600;
+  color: var(--color-error);
+  margin-left: var(--spacing-2);
+}
+
+.gastos-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-2);
+  border-top: 1px solid var(--color-gray-300);
+  font-weight: 600;
+}
+
+.sin-gastos {
+  color: var(--color-gray-500);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+  margin: 0;
+  text-align: center;
+  padding: var(--spacing-2);
+}
+
 /* Leyenda */
 .auditoria-legend {
   display: flex;

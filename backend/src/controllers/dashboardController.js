@@ -166,7 +166,14 @@ export const getAuditoria = async (req, res, next) => {
 
     const cortes = await Corte.findAll({
       where: whereCortes,
-      include: [{ model: Gasto, as: 'gastos' }]
+      include: [
+        {
+          model: Gasto,
+          as: 'gastos',
+          include: [{ model: CategoriaGasto, as: 'categoria' }]
+        },
+        { model: Sucursal, as: 'sucursal' }
+      ]
     });
 
     // Crear mapa de cortes por fecha y sucursal
@@ -177,13 +184,24 @@ export const getAuditoria = async (req, res, next) => {
       const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
       // Calcular venta como efectivoCaja + gastos (fórmula del negocio)
       const ventaCalculada = efectivoCaja + totalGastos;
+
+      // Detalle de gastos individuales
+      const gastosDetalle = corte.gastos.map(g => ({
+        id: g.id,
+        descripcion: g.descripcion,
+        monto: parseFloat(g.monto || 0),
+        categoria: g.categoria?.nombre || 'Sin categoría'
+      }));
+
       cortesMap[key] = {
         id: corte.id,
         estado: corte.estado,
         ventaTotal: ventaCalculada,
         efectivoCaja,
         totalGastos,
-        utilidad: efectivoCaja // utilidad = venta - gastos = efectivoCaja
+        utilidad: efectivoCaja, // utilidad = venta - gastos = efectivoCaja
+        gastos: gastosDetalle,
+        tipoSucursal: corte.sucursal?.tipo
       };
     });
 
@@ -221,12 +239,14 @@ export const getAuditoria = async (req, res, next) => {
         return {
           sucursalId: sucursal.id,
           sucursal: sucursal.nombre,
+          tipo: sucursal.tipo,
           estado: corteData?.estado || 'pendiente',
           corteId: corteData?.id || null,
           ventaTotal: corteData?.ventaTotal || 0,
           efectivoCaja: corteData?.efectivoCaja || 0,
           totalGastos: corteData?.totalGastos || 0,
-          utilidad: corteData?.utilidad || 0
+          utilidad: corteData?.utilidad || 0,
+          gastos: corteData?.gastos || []
         };
       });
 
@@ -276,7 +296,8 @@ export const getResumenSemanal = async (req, res, next) => {
       fechaInicio = sunday.toISOString().split('T')[0];
     }
 
-    const startDate = new Date(fechaInicio);
+    // Usar T12:00:00 para evitar problemas de zona horaria
+    const startDate = new Date(fechaInicio + 'T12:00:00');
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 6);
     const fechaFin = endDate.toISOString().split('T')[0];
@@ -287,13 +308,17 @@ export const getResumenSemanal = async (req, res, next) => {
       order: [['tipo', 'ASC'], ['nombre', 'ASC']]
     });
 
-    // Obtener cortes de la semana
+    // Obtener cortes de la semana con detalle de gastos
     const cortes = await Corte.findAll({
       where: {
         fecha: { [Op.between]: [fechaInicio, fechaFin] }
       },
       include: [
-        { model: Gasto, as: 'gastos' },
+        {
+          model: Gasto,
+          as: 'gastos',
+          include: [{ model: CategoriaGasto, as: 'categoria' }]
+        },
         { model: Sucursal, as: 'sucursal' }
       ]
     });
@@ -307,13 +332,22 @@ export const getResumenSemanal = async (req, res, next) => {
       // Calcular venta como efectivoCaja + gastos (la fórmula correcta del negocio)
       const ventaCalculada = efectivoCaja + totalGastos;
 
+      // Detalle de gastos individuales
+      const gastosDetalle = corte.gastos.map(g => ({
+        id: g.id,
+        descripcion: g.descripcion,
+        monto: parseFloat(g.monto || 0),
+        categoria: g.categoria?.nombre || 'Sin categoría'
+      }));
+
       cortesMap[key] = {
         id: corte.id,
         estado: corte.estado,
         ventaTotal: ventaCalculada,
         efectivoCaja,
         totalGastos,
-        tipo: corte.sucursal.tipo
+        tipo: corte.sucursal.tipo,
+        gastos: gastosDetalle
       };
     });
 
@@ -346,7 +380,8 @@ export const getResumenSemanal = async (req, res, next) => {
           venta,
           gastos: gasto,
           utilidad: venta - gasto,
-          estado: corteData?.estado || 'pendiente'
+          estado: corteData?.estado || 'pendiente',
+          gastosDetalle: corteData?.gastos || []
         };
       });
 

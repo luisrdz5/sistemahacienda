@@ -129,6 +129,70 @@
 
 .sucursal-cell.virtual {
   justify-content: center;
+  position: relative;
+}
+
+.sucursal-cell.virtual.clickable {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sucursal-cell.virtual.clickable:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: var(--border-radius);
+}
+
+.sucursal-cell.virtual.expanded {
+  background-color: rgba(59, 130, 246, 0.15);
+  border-radius: var(--border-radius);
+}
+
+.detalle-icon {
+  font-size: 10px;
+  color: var(--color-gray-400);
+  margin-left: var(--spacing-1);
+}
+
+.gastos-detalle-popup {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-3);
+  min-width: 200px;
+  max-width: 280px;
+  z-index: 100;
+  margin-top: var(--spacing-1);
+}
+
+.gasto-detalle-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid var(--color-gray-100);
+  font-size: var(--font-size-sm);
+}
+
+.gasto-detalle-item:last-child {
+  border-bottom: none;
+}
+
+.gasto-desc {
+  color: var(--color-gray-700);
+  flex: 1;
+  text-align: left;
+}
+
+.gasto-monto {
+  color: var(--color-error);
+  font-weight: 600;
+  margin-left: var(--spacing-2);
+  white-space: nowrap;
 }
 
 .sucursal-cell .venta {

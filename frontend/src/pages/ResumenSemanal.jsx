@@ -3,16 +3,17 @@ import api from '../services/api';
 import './ResumenSemanal.css';
 
 function ResumenSemanal() {
-  const [fechaInicio, setFechaInicio] = useState(getMonday(new Date()));
+  const [fechaInicio, setFechaInicio] = useState(getSunday(new Date()));
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [detalleAbierto, setDetalleAbierto] = useState(null); // { fecha, sucursalId }
 
-  function getMonday(date) {
+  function getSunday(date) {
     const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    d.setDate(diff);
+    d.setHours(12, 0, 0, 0); // Evitar problemas de zona horaria
+    const day = d.getDay(); // 0 = domingo
+    d.setDate(d.getDate() - day);
     return d.toISOString().split('T')[0];
   }
 
@@ -33,7 +34,7 @@ function ResumenSemanal() {
   }, [fechaInicio]);
 
   const cambiarSemana = (delta) => {
-    const current = new Date(fechaInicio);
+    const current = new Date(fechaInicio + 'T12:00:00');
     current.setDate(current.getDate() + (delta * 7));
     setFechaInicio(current.toISOString().split('T')[0]);
   };
@@ -124,23 +125,47 @@ function ResumenSemanal() {
                       <span className="dia-fecha">{formatDate(dia.fecha)}</span>
                     </div>
                   </td>
-                  {dia.sucursales.map(s => (
-                    <td key={s.sucursalId} className={s.tipo === 'virtual' ? 'col-virtual' : ''}>
-                      {s.tipo === 'virtual' ? (
-                        <div className="sucursal-cell virtual">
-                          <span className="gasto">{formatMoney(s.gastos)}</span>
-                        </div>
-                      ) : (
-                        <div className="sucursal-cell">
-                          <span className="venta">{formatMoney(s.venta)}</span>
-                          <span className="gasto">-{formatMoney(s.gastos)}</span>
-                          <span className={`utilidad ${s.utilidad >= 0 ? 'positive' : 'negative'}`}>
-                            {formatMoney(s.utilidad)}
-                          </span>
-                        </div>
-                      )}
-                    </td>
-                  ))}
+                  {dia.sucursales.map(s => {
+                    const isOpen = detalleAbierto?.fecha === dia.fecha && detalleAbierto?.sucursalId === s.sucursalId;
+                    const toggleDetalle = () => {
+                      if (s.tipo === 'virtual' && s.gastosDetalle?.length > 0) {
+                        setDetalleAbierto(isOpen ? null : { fecha: dia.fecha, sucursalId: s.sucursalId });
+                      }
+                    };
+                    return (
+                      <td key={s.sucursalId} className={s.tipo === 'virtual' ? 'col-virtual' : ''}>
+                        {s.tipo === 'virtual' ? (
+                          <div
+                            className={`sucursal-cell virtual ${s.gastosDetalle?.length > 0 ? 'clickable' : ''} ${isOpen ? 'expanded' : ''}`}
+                            onClick={toggleDetalle}
+                          >
+                            <span className="gasto">{formatMoney(s.gastos)}</span>
+                            {s.gastosDetalle?.length > 0 && (
+                              <span className="detalle-icon">{isOpen ? '▲' : '▼'}</span>
+                            )}
+                            {isOpen && (
+                              <div className="gastos-detalle-popup">
+                                {s.gastosDetalle.map((g, idx) => (
+                                  <div key={idx} className="gasto-detalle-item">
+                                    <span className="gasto-desc">{g.descripcion || g.categoria}</span>
+                                    <span className="gasto-monto">{formatMoney(g.monto)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="sucursal-cell">
+                            <span className="venta">{formatMoney(s.venta)}</span>
+                            <span className="gasto">-{formatMoney(s.gastos)}</span>
+                            <span className={`utilidad ${s.utilidad >= 0 ? 'positive' : 'negative'}`}>
+                              {formatMoney(s.utilidad)}
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
                   <td className="col-total">
                     <div className="totales-cell">
                       <span className="venta">{formatMoney(dia.totales.ventas)}</span>
