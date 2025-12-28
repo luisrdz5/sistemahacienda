@@ -6,10 +6,18 @@ import GastoItem from '../components/cortes/GastoItem';
 import InventarioHarina from '../components/cortes/InventarioHarina';
 import './Captura.css';
 
+function getLocalDateString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function Captura() {
-  const { usuario } = useAuth();
-  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
-  const [sucursalId, setSucursalId] = useState(usuario?.sucursalId || '');
+  const { usuario, loading: authLoading } = useAuth();
+  const [fecha, setFecha] = useState(getLocalDateString());
+  const [sucursalId, setSucursalId] = useState('');
   const [sucursales, setSucursales] = useState([]);
   const [corte, setCorte] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -21,10 +29,24 @@ function Captura() {
   const isAdmin = usuario?.rol === 'admin';
   const canEdit = corte?.estado !== 'completado' || isAdmin;
 
+  // Actualizar sucursalId cuando usuario cambia (para encargados)
+  useEffect(() => {
+    if (usuario?.sucursalId && !isAdmin) {
+      setSucursalId(usuario.sucursalId.toString());
+    }
+  }, [usuario?.sucursalId, isAdmin]);
+
   // Cargar sucursales si es admin
   useEffect(() => {
     if (isAdmin) {
-      api.get('/sucursales').then(setSucursales).catch(console.error);
+      api.get('/sucursales')
+        .then(data => {
+          setSucursales(data);
+        })
+        .catch(err => {
+          console.error('Error cargando sucursales:', err);
+          setError('Error cargando sucursales');
+        });
     }
   }, [isAdmin]);
 
@@ -128,6 +150,15 @@ function Captura() {
       setError(err.message);
     }
   };
+
+  // Mostrar loading mientras se carga el usuario
+  if (authLoading) {
+    return (
+      <div className="page">
+        <div className="loading-inline">Cargando...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="page">
