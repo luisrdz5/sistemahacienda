@@ -2,20 +2,29 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import './ResumenSemanal.css';
 
+// Función para formatear fecha local sin depender de toISOString (evita problemas de zona horaria en iOS)
+function getLocalDateString(date) {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getSunday(date) {
+  const d = new Date(date);
+  d.setHours(12, 0, 0, 0);
+  const day = d.getDay(); // 0 = domingo
+  d.setDate(d.getDate() - day);
+  return getLocalDateString(d);
+}
+
 function ResumenSemanal() {
   const [fechaInicio, setFechaInicio] = useState(getSunday(new Date()));
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [detalleAbierto, setDetalleAbierto] = useState(null); // { fecha, sucursalId }
-
-  function getSunday(date) {
-    const d = new Date(date);
-    d.setHours(12, 0, 0, 0); // Evitar problemas de zona horaria
-    const day = d.getDay(); // 0 = domingo
-    d.setDate(d.getDate() - day);
-    return d.toISOString().split('T')[0];
-  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +45,7 @@ function ResumenSemanal() {
   const cambiarSemana = (delta) => {
     const current = new Date(fechaInicio + 'T12:00:00');
     current.setDate(current.getDate() + (delta * 7));
-    setFechaInicio(current.toISOString().split('T')[0]);
+    setFechaInicio(getLocalDateString(current));
   };
 
   const formatMoney = (amount) => {
@@ -97,6 +106,33 @@ function ResumenSemanal() {
           <span className={`stat-value ${data?.totalesSemanales?.utilidad >= 0 ? 'stat-success' : 'stat-error'}`}>
             {formatMoney(data?.totalesSemanales?.utilidad)}
           </span>
+        </div>
+      </div>
+
+      {/* Caja Chica - Arrastre de saldo */}
+      <div className="caja-chica-section">
+        <h3 className="caja-chica-titulo">Caja Chica</h3>
+        <div className="caja-chica-grid">
+          <div className="caja-chica-item">
+            <span className="caja-chica-label">Saldo Anterior</span>
+            <span className={`caja-chica-value ${data?.cajaChica?.saldoAnterior >= 0 ? 'positive' : 'negative'}`}>
+              {formatMoney(data?.cajaChica?.saldoAnterior)}
+            </span>
+          </div>
+          <div className="caja-chica-operador">+</div>
+          <div className="caja-chica-item">
+            <span className="caja-chica-label">Utilidad Semana</span>
+            <span className={`caja-chica-value ${data?.cajaChica?.utilidadSemana >= 0 ? 'positive' : 'negative'}`}>
+              {formatMoney(data?.cajaChica?.utilidadSemana)}
+            </span>
+          </div>
+          <div className="caja-chica-operador">=</div>
+          <div className="caja-chica-item caja-chica-resultado">
+            <span className="caja-chica-label">Saldo Nuevo</span>
+            <span className={`caja-chica-value ${data?.cajaChica?.saldoNuevo >= 0 ? 'positive' : 'negative'}`}>
+              {formatMoney(data?.cajaChica?.saldoNuevo)}
+            </span>
+          </div>
         </div>
       </div>
 

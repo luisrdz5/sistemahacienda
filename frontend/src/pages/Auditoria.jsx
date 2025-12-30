@@ -3,6 +3,13 @@ import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import './Auditoria.css';
 
+// Función para parsear fechas evitando problemas de timezone
+function parseFechaLocal(fechaStr) {
+  // fechaStr viene como "2025-12-27", lo parseamos como fecha local
+  const [year, month, day] = fechaStr.split('-').map(Number);
+  return new Date(year, month - 1, day, 12, 0, 0); // mediodía para evitar problemas
+}
+
 function Auditoria() {
   const { usuario } = useAuth();
   const [mes, setMes] = useState(new Date().getMonth() + 1);
@@ -151,7 +158,9 @@ function Auditoria() {
         </div>
         <div className="stat-card">
           <span className="stat-label">Caja Chica</span>
-          <span className="stat-value stat-info">{formatMoney(estadisticas.totalCajaChica)}</span>
+          <span className={`stat-value ${estadisticas.totalCajaChica >= 0 ? 'stat-success' : 'stat-error'}`}>
+            {formatMoney(estadisticas.totalCajaChica)}
+          </span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Ahorro</span>
@@ -187,7 +196,7 @@ function Auditoria() {
             </thead>
             <tbody>
               {auditoria?.auditoria?.map((dia) => {
-                const fecha = new Date(dia.fecha);
+                const fecha = parseFechaLocal(dia.fecha);
                 return (
                   <tr key={dia.fecha} onClick={() => setDiaSeleccionado(dia.fecha === diaSeleccionado ? null : dia.fecha)}>
                     <td>{fecha.getDate()}</td>
@@ -219,7 +228,7 @@ function Auditoria() {
 
           <div className="calendar-body">
             {auditoria?.auditoria?.map((dia, index) => {
-              const fecha = new Date(dia.fecha);
+              const fecha = parseFechaLocal(dia.fecha);
               const diaSemana = fecha.getDay();
 
               const espacios = index === 0 ? Array(diaSemana === 0 ? 6 : diaSemana - 1).fill(null) : [];
@@ -253,7 +262,7 @@ function Auditoria() {
         <div className="auditoria-detalle card">
           <div className="detalle-header">
             <h3>
-              {new Date(diaSeleccionado).toLocaleDateString('es-MX', {
+              {parseFechaLocal(diaSeleccionado).toLocaleDateString('es-MX', {
                 weekday: 'long',
                 day: 'numeric',
                 month: 'long'
@@ -297,6 +306,22 @@ function Auditoria() {
                         {formatMoney(s.utilidad)}
                       </span>
                     </div>
+                    {/* Detalle de gastos para sucursales físicas */}
+                    {s.gastos && s.gastos.length > 0 && (
+                      <div className="detalle-gastos-sucursal">
+                        <span className="gastos-titulo">Desglose de gastos:</span>
+                        <div className="gastos-lista-mini">
+                          {s.gastos.map((gasto, idx) => (
+                            <div key={idx} className="gasto-mini-item">
+                              <span className="gasto-mini-desc">
+                                {gasto.descripcion || gasto.categoria}
+                              </span>
+                              <span className="gasto-mini-monto">{formatMoney(gasto.monto)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

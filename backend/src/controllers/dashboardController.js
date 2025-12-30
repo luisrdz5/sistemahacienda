@@ -141,6 +141,12 @@ export const getAuditoria = async (req, res, next) => {
     // Primer y último día del mes
     const primerDia = new Date(anio, mes - 1, 1);
     const ultimoDia = new Date(anio, mes, 0);
+    // Para caja chica acumulada, usar la fecha de hoy si es el mes actual, o el último día del mes si es un mes pasado
+    const hoy = new Date();
+    hoy.setHours(12, 0, 0, 0);
+    const fechaParaCajaChica = (anio === hoy.getFullYear() && mes === hoy.getMonth() + 1)
+      ? getLocalDateString(hoy)
+      : getLocalDateString(ultimoDia);
 
     const whereSucursales = { activa: true };
     if (sucursalId) {
@@ -150,6 +156,38 @@ export const getAuditoria = async (req, res, next) => {
     const sucursales = await Sucursal.findAll({
       where: whereSucursales
     });
+
+    // ========================================
+    // CALCULAR CAJA CHICA ACUMULADA (histórico)
+    // Incluye TODOS los cortes (no filtra por estado)
+    // ========================================
+    const todosLosCortes = await Corte.findAll({
+      where: {
+        fecha: { [Op.lte]: fechaParaCajaChica }
+      },
+      include: [
+        { model: Gasto, as: 'gastos' },
+        { model: Sucursal, as: 'sucursal' }
+      ]
+    });
+
+    let ventasAcumuladas = 0;
+    let gastosAcumulados = 0;
+
+    todosLosCortes.forEach(corte => {
+      const totalGastosCorte = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+      const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
+
+      if (corte.sucursal?.tipo === 'fisica') {
+        // Venta = efectivoCaja + gastos (fórmula del negocio)
+        ventasAcumuladas += efectivoCaja + totalGastosCorte;
+      }
+      // Sumar TODOS los gastos (de físicas y virtuales)
+      gastosAcumulados += totalGastosCorte;
+    });
+
+    // Caja Chica acumulada = Ventas - Gastos (histórico total)
+    const cajaChicaAcumulada = ventasAcumuladas - gastosAcumulados;
 
     // Obtener todos los cortes del mes con gastos
     const whereCortes = {
@@ -193,13 +231,17 @@ export const getAuditoria = async (req, res, next) => {
         categoria: g.categoria?.nombre || 'Sin categoría'
       }));
 
+      // Solo las sucursales físicas tienen ventas
+      const esVirtual = corte.sucursal?.tipo === 'virtual';
+      const ventaReal = esVirtual ? 0 : ventaCalculada;
+
       cortesMap[key] = {
         id: corte.id,
         estado: corte.estado,
-        ventaTotal: ventaCalculada,
-        efectivoCaja,
+        ventaTotal: ventaReal,
+        efectivoCaja: esVirtual ? 0 : efectivoCaja,
         totalGastos,
-        utilidad: efectivoCaja, // utilidad = venta - gastos = efectivoCaja
+        utilidad: esVirtual ? -totalGastos : efectivoCaja, // virtuales: solo gasto, físicas: efectivo es utilidad
         gastos: gastosDetalle,
         tipoSucursal: corte.sucursal?.tipo
       };
@@ -212,15 +254,20 @@ export const getAuditoria = async (req, res, next) => {
     // Estadísticas del mes
     let totalVentas = 0;
     let totalGastos = 0;
-    let totalCajaChica = 0;
     let totalAhorro = 0;
+    let totalNomina = 0;
+    let totalGastosGlobales = 0;
     let cortesCompletados = 0;
     let cortesBorrador = 0;
     let cortesPendientes = 0;
 
-    // Encontrar el ID de la sucursal "Ahorro"
+    // Encontrar IDs de las sucursales virtuales
     const sucursalAhorro = sucursales.find(s => s.nombre === 'Ahorro');
+    const sucursalNomina = sucursales.find(s => s.nombre === 'Nómina');
+    const sucursalGastosGlobales = sucursales.find(s => s.nombre === 'Gastos Globales');
     const ahorroId = sucursalAhorro?.id;
+    const nominaId = sucursalNomina?.id;
+    const gastosGlobalesId = sucursalGastosGlobales?.id;
 
     for (let dia = 1; dia <= diasDelMes; dia++) {
       const fecha = new Date(anio, mes - 1, dia);
@@ -231,22 +278,24 @@ export const getAuditoria = async (req, res, next) => {
         const corteData = cortesMap[key];
 
         if (corteData) {
+          // Contar estado
           if (corteData.estado === 'completado') {
             cortesCompletados++;
-            totalVentas += corteData.ventaTotal;
-            totalGastos += corteData.totalGastos;
-
-            // Sumar efectivo en caja solo de sucursales físicas
-            if (sucursal.tipo === 'fisica') {
-              totalCajaChica += corteData.efectivoCaja;
-            }
-
-            // Sumar gastos de la sucursal Ahorro
-            if (sucursal.id === ahorroId) {
-              totalAhorro += corteData.totalGastos;
-            }
           } else {
             cortesBorrador++;
+          }
+
+          // Sumar ventas y gastos de TODOS los cortes (no solo completados)
+          totalVentas += corteData.ventaTotal;
+          totalGastos += corteData.totalGastos;
+
+          // Sumar gastos por tipo de sucursal virtual
+          if (sucursal.id === ahorroId) {
+            totalAhorro += corteData.totalGastos;
+          } else if (sucursal.id === nominaId) {
+            totalNomina += corteData.totalGastos;
+          } else if (sucursal.id === gastosGlobalesId) {
+            totalGastosGlobales += corteData.totalGastos;
           }
         } else {
           cortesPendientes++;
@@ -278,15 +327,20 @@ export const getAuditoria = async (req, res, next) => {
       ? Math.round((cortesCompletados / totalCortes) * 100)
       : 0;
 
+    // Utilidad Neta del mes = Ventas - Gastos del mes
+    const utilidadNeta = totalVentas - totalGastos;
+
     res.json({
       mes,
       anio,
       estadisticas: {
         totalVentas,
         totalGastos,
-        utilidadNeta: totalVentas - totalGastos,
-        totalCajaChica,
+        utilidadNeta,
+        totalCajaChica: cajaChicaAcumulada, // Saldo acumulado histórico
         totalAhorro,
+        totalNomina,
+        totalGastosGlobales,
         cortesCompletados,
         cortesBorrador,
         cortesPendientes,
@@ -302,29 +356,77 @@ export const getAuditoria = async (req, res, next) => {
 /**
  * Resumen semanal con totales por día y sucursal
  */
+// Función helper para formatear fecha local sin problemas de zona horaria
+function getLocalDateString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export const getResumenSemanal = async (req, res, next) => {
   try {
     // Calcular inicio de semana (domingo)
     let fechaInicio = req.query.fechaInicio;
     if (!fechaInicio) {
       const today = new Date();
+      today.setHours(12, 0, 0, 0); // Evitar problemas de zona horaria
       const dayOfWeek = today.getDay(); // 0 = domingo
       const sunday = new Date(today);
       sunday.setDate(today.getDate() - dayOfWeek);
-      fechaInicio = sunday.toISOString().split('T')[0];
+      fechaInicio = getLocalDateString(sunday);
     }
 
     // Usar T12:00:00 para evitar problemas de zona horaria
     const startDate = new Date(fechaInicio + 'T12:00:00');
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 6);
-    const fechaFin = endDate.toISOString().split('T')[0];
+    const fechaFin = getLocalDateString(endDate);
+
+    // Calcular saldo acumulado de semanas anteriores (caja chica)
+    // Buscamos todos los cortes desde el inicio de los tiempos hasta el día anterior al inicio de esta semana
+    const diaAnterior = new Date(startDate);
+    diaAnterior.setDate(diaAnterior.getDate() - 1);
+    const fechaAnterior = getLocalDateString(diaAnterior);
 
     // Obtener sucursales activas
     const sucursales = await Sucursal.findAll({
       where: { activa: true },
       order: [['tipo', 'ASC'], ['nombre', 'ASC']]
     });
+
+    // Calcular saldo acumulado de semanas anteriores (utilidad acumulada)
+    // Usando EXACTAMENTE la misma lógica que el resumen semanal:
+    // - Ventas = suma de (efectivoCaja + gastos) de sucursales físicas
+    // - Gastos = suma de todos los gastos de todas las sucursales
+    // - Utilidad = Ventas - Gastos
+    // NO filtramos por estado para que coincida con el resumen semanal
+    const cortesAnteriores = await Corte.findAll({
+      where: {
+        fecha: { [Op.lte]: fechaAnterior }
+      },
+      include: [
+        { model: Gasto, as: 'gastos' },
+        { model: Sucursal, as: 'sucursal' }
+      ]
+    });
+
+    let ventasAnteriores = 0;
+    let gastosAnteriores = 0;
+
+    cortesAnteriores.forEach(corte => {
+      const totalGastos = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+      const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
+
+      if (corte.sucursal.tipo === 'fisica') {
+        // Venta = efectivoCaja + gastos (fórmula del negocio)
+        ventasAnteriores += efectivoCaja + totalGastos;
+      }
+      // Sumar TODOS los gastos (de físicas y virtuales)
+      gastosAnteriores += totalGastos;
+    });
+
+    const saldoAnterior = ventasAnteriores - gastosAnteriores;
 
     // Obtener cortes de la semana con detalle de gastos
     const cortes = await Corte.findAll({
@@ -376,7 +478,7 @@ export const getResumenSemanal = async (req, res, next) => {
     for (let i = 0; i < 7; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
-      const fechaStr = currentDate.toISOString().split('T')[0];
+      const fechaStr = getLocalDateString(currentDate);
 
       let ventasDia = 0;
       let gastosDia = 0;
@@ -420,6 +522,9 @@ export const getResumenSemanal = async (req, res, next) => {
 
     totalesSemanales.utilidad = totalesSemanales.ventas - totalesSemanales.gastos;
 
+    // Calcular saldo nuevo (saldo anterior + utilidad de la semana)
+    const saldoNuevo = saldoAnterior + totalesSemanales.utilidad;
+
     res.json({
       semana: {
         inicio: fechaInicio,
@@ -427,6 +532,11 @@ export const getResumenSemanal = async (req, res, next) => {
       },
       dias,
       totalesSemanales,
+      cajaChica: {
+        saldoAnterior,
+        utilidadSemana: totalesSemanales.utilidad,
+        saldoNuevo
+      },
       sucursales: sucursales.map(s => ({ id: s.id, nombre: s.nombre, tipo: s.tipo }))
     });
   } catch (error) {
@@ -444,10 +554,40 @@ export const getResumenMensual = async (req, res, next) => {
 
     const primerDia = new Date(anio, mes - 1, 1);
     const ultimoDia = new Date(anio, mes, 0);
+    const ultimoDiaStr = getLocalDateString(ultimoDia);
 
     const sucursales = await Sucursal.findAll({ where: { activa: true } });
 
-    // Obtener cortes del mes
+    // ========================================
+    // CALCULAR CAJA CHICA ACUMULADA (histórico)
+    // Incluye TODOS los cortes
+    // ========================================
+    const todosLosCortes = await Corte.findAll({
+      where: {
+        fecha: { [Op.lte]: ultimoDiaStr }
+      },
+      include: [
+        { model: Gasto, as: 'gastos' },
+        { model: Sucursal, as: 'sucursal' }
+      ]
+    });
+
+    let ventasAcumuladas = 0;
+    let gastosAcumulados = 0;
+
+    todosLosCortes.forEach(corte => {
+      const totalGastosCorte = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+      const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
+
+      if (corte.sucursal?.tipo === 'fisica') {
+        ventasAcumuladas += efectivoCaja + totalGastosCorte;
+      }
+      gastosAcumulados += totalGastosCorte;
+    });
+
+    const cajaChicaAcumulada = ventasAcumuladas - gastosAcumulados;
+
+    // Obtener cortes del mes (para estadísticas del mes) - TODOS los cortes
     const cortes = await Corte.findAll({
       where: {
         fecha: {
@@ -455,8 +595,7 @@ export const getResumenMensual = async (req, res, next) => {
             primerDia.toISOString().split('T')[0],
             ultimoDia.toISOString().split('T')[0]
           ]
-        },
-        estado: 'completado'
+        }
       },
       include: [
         { model: Gasto, as: 'gastos', include: [{ model: CategoriaGasto, as: 'categoria' }] },
@@ -466,7 +605,6 @@ export const getResumenMensual = async (req, res, next) => {
 
     let totalVentas = 0;
     let totalGastos = 0;
-    let totalCajaChica = 0;
     let totalAhorro = 0;
     const gastosPorCategoria = {};
     const ventasPorSucursal = {};
@@ -481,10 +619,6 @@ export const getResumenMensual = async (req, res, next) => {
 
       totalVentas += ventaCalculada;
       totalGastos += totalGastosCorte;
-
-      if (corte.sucursal.tipo === 'fisica') {
-        totalCajaChica += efectivoCaja;
-      }
 
       if (corte.sucursalId === sucursalAhorro?.id) {
         totalAhorro += totalGastosCorte;
@@ -547,7 +681,7 @@ export const getResumenMensual = async (req, res, next) => {
         totalVentas,
         totalGastos,
         utilidadNeta: totalVentas - totalGastos,
-        totalCajaChica,
+        totalCajaChica: cajaChicaAcumulada, // Saldo acumulado histórico
         totalAhorro,
         promedioVentaDiaria: totalVentas / ultimoDia.getDate(),
         cortesCompletados: cortes.length
@@ -567,17 +701,46 @@ export const getResumenMensual = async (req, res, next) => {
 export const getResumenAnual = async (req, res, next) => {
   try {
     const anio = parseInt(req.query.anio) || new Date().getFullYear();
+    const ultimoDiaAnio = `${anio}-12-31`;
 
     const sucursales = await Sucursal.findAll({ where: { activa: true } });
     const sucursalAhorro = sucursales.find(s => s.nombre === 'Ahorro');
 
-    // Obtener cortes del año
+    // ========================================
+    // CALCULAR CAJA CHICA ACUMULADA (histórico)
+    // Incluye TODOS los cortes
+    // ========================================
+    const todosLosCortes = await Corte.findAll({
+      where: {
+        fecha: { [Op.lte]: ultimoDiaAnio }
+      },
+      include: [
+        { model: Gasto, as: 'gastos' },
+        { model: Sucursal, as: 'sucursal' }
+      ]
+    });
+
+    let ventasAcumuladas = 0;
+    let gastosAcumulados = 0;
+
+    todosLosCortes.forEach(corte => {
+      const totalGastosCorte = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+      const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
+
+      if (corte.sucursal?.tipo === 'fisica') {
+        ventasAcumuladas += efectivoCaja + totalGastosCorte;
+      }
+      gastosAcumulados += totalGastosCorte;
+    });
+
+    const cajaChicaAcumulada = ventasAcumuladas - gastosAcumulados;
+
+    // Obtener cortes del año (para estadísticas del año) - TODOS los cortes
     const cortes = await Corte.findAll({
       where: {
         fecha: {
           [Op.between]: [`${anio}-01-01`, `${anio}-12-31`]
-        },
-        estado: 'completado'
+        }
       },
       include: [
         { model: Gasto, as: 'gastos' },
@@ -629,8 +792,7 @@ export const getResumenAnual = async (req, res, next) => {
     const anioAnterior = anio - 1;
     const cortesAnterior = await Corte.findAll({
       where: {
-        fecha: { [Op.between]: [`${anioAnterior}-01-01`, `${anioAnterior}-12-31`] },
-        estado: 'completado'
+        fecha: { [Op.between]: [`${anioAnterior}-01-01`, `${anioAnterior}-12-31`] }
       },
       include: [
         { model: Gasto, as: 'gastos' },
@@ -657,7 +819,7 @@ export const getResumenAnual = async (req, res, next) => {
         totalVentas: totalAnual.ventas,
         totalGastos: totalAnual.gastos,
         utilidadNeta: totalAnual.ventas - totalAnual.gastos,
-        totalCajaChica: totalAnual.cajaChica,
+        totalCajaChica: cajaChicaAcumulada, // Saldo acumulado histórico
         totalAhorro: totalAnual.ahorro,
         promedioMensual: totalAnual.ventas / 12
       },

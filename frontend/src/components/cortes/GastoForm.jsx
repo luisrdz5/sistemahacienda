@@ -272,24 +272,66 @@ function GastoForm({ onSubmit, onClose, sucursal }) {
             <>
               <div className="form-group">
                 <label className="form-label">Categoría</label>
-                <select
-                  className="form-input"
-                  value={categoriaId}
-                  onChange={(e) => setCategoriaId(e.target.value)}
-                  required
-                >
-                  <option value="">Seleccionar categoría</option>
-                  <optgroup label="Gastos Operativos">
-                    {categorias.filter(c => c.tipo === 'operativo').map(c => (
-                      <option key={c.id} value={c.id}>{c.nombre}</option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Nómina">
-                    {categorias.filter(c => c.tipo === 'nomina').map(c => (
-                      <option key={c.id} value={c.id}>{c.nombre}</option>
-                    ))}
-                  </optgroup>
-                </select>
+                {!showNuevaCategoria ? (
+                  <>
+                    <select
+                      className="form-input"
+                      value={categoriaId}
+                      onChange={(e) => setCategoriaId(e.target.value)}
+                      required
+                    >
+                      <option value="">Seleccionar categoría</option>
+                      <optgroup label="Gastos Operativos">
+                        {categorias.filter(c => c.tipo === 'operativo').map(c => (
+                          <option key={c.id} value={c.id}>{c.nombre}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Nómina">
+                        {categorias.filter(c => c.tipo === 'nomina').map(c => (
+                          <option key={c.id} value={c.id}>{c.nombre}</option>
+                        ))}
+                      </optgroup>
+                    </select>
+                    <button
+                      type="button"
+                      className="btn-link"
+                      onClick={() => setShowNuevaCategoria(true)}
+                    >
+                      + Agregar nueva categoría
+                    </button>
+                  </>
+                ) : (
+                  <div className="nuevo-item-form">
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={nuevoNombre}
+                      onChange={(e) => setNuevoNombre(e.target.value)}
+                      placeholder="Nombre de la categoría"
+                      autoFocus
+                    />
+                    <div className="nuevo-item-actions">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={crearCategoria}
+                        disabled={creando}
+                      >
+                        {creando ? 'Creando...' : 'Crear'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => {
+                          setShowNuevaCategoria(false);
+                          setNuevoNombre('');
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {categorias.find(c => c.id === parseInt(categoriaId))?.tipo === 'nomina' && (
@@ -301,6 +343,20 @@ function GastoForm({ onSubmit, onClose, sucursal }) {
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
                     placeholder="Ej: Martha"
+                  />
+                </div>
+              )}
+
+              {/* Descripción opcional para gastos operativos */}
+              {categorias.find(c => c.id === parseInt(categoriaId))?.tipo === 'operativo' && (
+                <div className="form-group">
+                  <label className="form-label">Descripción (opcional)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={descripcion}
+                    onChange={(e) => setDescripcion(e.target.value)}
+                    placeholder="Detalle del gasto"
                   />
                 </div>
               )}

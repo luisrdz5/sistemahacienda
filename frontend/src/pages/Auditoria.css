@@ -380,6 +380,52 @@
   padding: var(--spacing-2);
 }
 
+/* Detalle de gastos inline para sucursales físicas */
+.detalle-gastos-sucursal {
+  grid-column: span 2;
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
+  border-top: 1px dashed var(--color-gray-300);
+}
+
+.gastos-titulo {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-2);
+  font-weight: 600;
+}
+
+.gastos-lista-mini {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.gasto-mini-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-1) var(--spacing-2);
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+}
+
+.gasto-mini-desc {
+  color: var(--color-gray-700);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gasto-mini-monto {
+  font-weight: 600;
+  color: var(--color-error);
+  margin-left: var(--spacing-2);
+}
+
 /* Leyenda */
 .auditoria-legend {
   display: flex;

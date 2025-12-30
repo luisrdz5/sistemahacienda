@@ -63,7 +63,7 @@ function ResumenAnual() {
       </div>
 
       {/* KPIs principales */}
-      <div className="stats-grid-4">
+      <div className="stats-grid-5">
         <div className="stat-card">
           <span className="stat-label">Ventas Anuales</span>
           <span className="stat-value stat-success">{formatMoney(data?.estadisticas?.totalVentas)}</span>
@@ -79,20 +79,20 @@ function ResumenAnual() {
           </span>
         </div>
         <div className="stat-card">
-          <span className="stat-label">Promedio Mensual</span>
-          <span className="stat-value stat-primary">{formatMoney(data?.estadisticas?.promedioMensual)}</span>
+          <span className="stat-label">Caja Chica Total</span>
+          <span className="stat-value stat-info">{formatMoney(data?.estadisticas?.totalCajaChica)}</span>
+        </div>
+        <div className="stat-card stat-card-ahorro">
+          <span className="stat-label">Ahorro Anual</span>
+          <span className="stat-value stat-ahorro">{formatMoney(data?.estadisticas?.totalAhorro)}</span>
         </div>
       </div>
 
       {/* KPIs secundarios */}
-      <div className="stats-grid-3">
+      <div className="stats-grid-2">
         <div className="stat-card stat-card-sm">
-          <span className="stat-label">Caja Chica Total</span>
-          <span className="stat-value stat-success">{formatMoney(data?.estadisticas?.totalCajaChica)}</span>
-        </div>
-        <div className="stat-card stat-card-sm">
-          <span className="stat-label">Ahorro Anual</span>
-          <span className="stat-value stat-primary">{formatMoney(data?.estadisticas?.totalAhorro)}</span>
+          <span className="stat-label">Promedio Mensual</span>
+          <span className="stat-value stat-primary">{formatMoney(data?.estadisticas?.promedioMensual)}</span>
         </div>
         <div className="stat-card stat-card-sm">
           <span className="stat-label">vs {data?.comparativaAnterior?.anio}</span>
