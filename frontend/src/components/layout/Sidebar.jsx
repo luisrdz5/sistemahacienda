@@ -12,6 +12,7 @@ function Sidebar() {
   const isAdminRepartidor = usuario?.rol === 'administrador_repartidor';
   const isRepartidor = usuario?.rol === 'repartidor';
   const isEncargado = usuario?.rol === 'encargado';
+  const isInvitado = usuario?.rol === 'invitado';
 
   // Determinar secciones abiertas basado en la ruta actual
   const getInitialOpenSections = () => {
@@ -43,7 +44,7 @@ function Sidebar() {
   // Definir estructura del menú por secciones
   const menuSections = [
     // Captura Diaria - Item individual (no en sección)
-    ...(!isRepartidor ? [{
+    ...(!isRepartidor && !isInvitado ? [{
       type: 'item',
       path: '/captura',
       label: 'Captura Diaria',
@@ -65,8 +66,8 @@ function Sidebar() {
       ]
     }] : []),
 
-    // Sección Pedidos - Todos los perfiles
-    {
+    // Sección Pedidos - Todos los perfiles excepto invitado
+    ...(!isInvitado ? [{
       type: 'section',
       id: 'pedidos',
       label: 'Pedidos',
@@ -75,7 +76,7 @@ function Sidebar() {
         { path: '/pedidos', label: 'Pedidos', icon: '🚚' },
         { path: '/corte-pedidos', label: 'Corte Pedidos', icon: '📋' },
       ]
-    },
+    }] : []),
 
     // Sección Administración - Varía por perfil
     ...((isAdmin || isAdminRepartidor || isEncargado) ? [{
@@ -120,6 +121,15 @@ function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
+        {/* Mensaje para usuarios invitados */}
+        {isInvitado && (
+          <div className="sidebar-invitado-msg">
+            <div className="invitado-icon">⏳</div>
+            <p>Tu cuenta está pendiente de aprobación.</p>
+            <p className="invitado-hint">Un administrador te asignará los permisos necesarios.</p>
+          </div>
+        )}
+
         {menuSections.map((section, index) => {
           if (section.type === 'item') {
             // Item individual (no en sección)
@@ -184,7 +194,8 @@ function Sidebar() {
               {usuario?.rol === 'admin' ? 'Administrador' :
                usuario?.rol === 'administrador_repartidor' ? 'Admin Repartidor' :
                usuario?.rol === 'repartidor' ? 'Repartidor' :
-               usuario?.rol === 'encargado' ? 'Encargado' : usuario?.rol}
+               usuario?.rol === 'encargado' ? 'Encargado' :
+               usuario?.rol === 'invitado' ? 'Pendiente' : usuario?.rol}
             </span>
           </div>
         </div>

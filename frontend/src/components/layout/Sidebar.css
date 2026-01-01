@@ -270,3 +270,26 @@
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: var(--color-gray-500);
 }
+
+/* Mensaje para usuarios invitados */
+.sidebar-invitado-msg {
+  padding: var(--spacing-6) var(--spacing-4);
+  text-align: center;
+  color: var(--color-gray-300);
+}
+
+.sidebar-invitado-msg .invitado-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-4);
+}
+
+.sidebar-invitado-msg p {
+  margin: 0 0 var(--spacing-2) 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.sidebar-invitado-msg .invitado-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}

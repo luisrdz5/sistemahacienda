@@ -34,7 +34,7 @@ const Usuario = sequelize.define('Usuario', {
     allowNull: true
   },
   rol: {
-    type: DataTypes.ENUM('admin', 'encargado', 'repartidor', 'administrador_repartidor'),
+    type: DataTypes.ENUM('admin', 'encargado', 'repartidor', 'administrador_repartidor', 'invitado'),
     allowNull: false,
     defaultValue: 'encargado'
   },
@@ -45,6 +45,16 @@ const Usuario = sequelize.define('Usuario', {
   activo: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  resetToken: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    field: 'reset_token'
+  },
+  resetTokenExpires: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'reset_token_expires'
   }
 }, {
   tableName: 'usuarios',

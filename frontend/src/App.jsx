@@ -4,6 +4,8 @@ import { useAuth } from './hooks/useAuth';
 
 // Pages
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Captura from './pages/Captura';
 import Dashboard from './pages/Dashboard';
 import Auditoria from './pages/Auditoria';
@@ -52,6 +54,12 @@ function App() {
     <Routes>
       <Route path="/login" element={
         usuario ? <Navigate to={usuario.rol === 'admin' ? '/dashboard' : '/captura'} replace /> : <Login />
+      } />
+      <Route path="/forgot-password" element={
+        usuario ? <Navigate to="/" replace /> : <ForgotPassword />
+      } />
+      <Route path="/reset-password/:token" element={
+        usuario ? <Navigate to="/" replace /> : <ResetPassword />
       } />
 
       <Route path="/" element={

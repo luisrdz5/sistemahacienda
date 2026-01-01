@@ -90,6 +90,24 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const loginWithGoogle = async (credential) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const response = await api.post('/auth/google', { credential });
+
+      localStorage.setItem('token', response.token);
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: response
+      });
+
+      return response;
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: error.message });
+      throw error;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     dispatch({ type: 'LOGOUT' });
@@ -98,6 +116,7 @@ export function AuthProvider({ children }) {
   const value = {
     ...state,
     login,
+    loginWithGoogle,
     logout
   };
 
