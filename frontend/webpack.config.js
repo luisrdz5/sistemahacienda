@@ -34,6 +34,13 @@ export default (env, argv) => {
     return prev;
   }, {});
 
+  // Agregar NODE_ENV y fallback para process.env
+  envKeys['process.env.NODE_ENV'] = JSON.stringify(isProduction ? 'production' : 'development');
+  envKeys['process.env'] = JSON.stringify({
+    NODE_ENV: isProduction ? 'production' : 'development',
+    ...envVars
+  });
+
   return {
     entry: './src/index.jsx',
     output: {
