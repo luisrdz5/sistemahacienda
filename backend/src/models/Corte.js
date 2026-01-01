@@ -39,6 +39,12 @@ const Corte = sequelize.define('Corte', {
     allowNull: true,
     defaultValue: 0
   },
+  consumoMasa: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    defaultValue: 0,
+    field: 'consumo_masa'
+  },
   estado: {
     type: DataTypes.ENUM('borrador', 'completado'),
     defaultValue: 'borrador'

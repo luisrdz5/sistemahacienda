@@ -175,3 +175,154 @@
   background-color: #dbeafe;
   color: #1e40af;
 }
+
+/* Consumo de Masa - Vista calculada automáticamente */
+.consumo-masa-section {
+  border: 2px solid var(--color-primary);
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.consumo-masa-calculado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.consumo-masa-info {
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+}
+
+.consumo-masa-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.consumo-masa-row:last-child {
+  border-bottom: none;
+}
+
+.consumo-masa-total {
+  background: var(--color-gray-50);
+  margin: var(--spacing-2) calc(-1 * var(--spacing-3));
+  padding: var(--spacing-3);
+  border-radius: var(--border-radius);
+}
+
+.consumo-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+.consumo-valor {
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.consumo-destacado {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+}
+
+.consumo-masa-nota {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  text-align: center;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Ingreso Estimado */
+.ingreso-estimado-section {
+  border: 2px solid var(--color-gray-200);
+}
+
+.ingreso-estimado-card {
+  background: var(--color-gray-50);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-3);
+}
+
+.ingreso-estimado-calculo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.calculo-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+.calculo-item.calculo-total {
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.ingreso-estimado-valor {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-3);
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-3);
+}
+
+.ingreso-estimado-valor span {
+  font-size: var(--font-size-sm);
+}
+
+.ingreso-estimado-valor strong {
+  font-size: var(--font-size-xl);
+}
+
+.alerta-fuga {
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+  color: #991b1b;
+}
+
+.alerta-fuga strong {
+  display: block;
+  margin-bottom: var(--spacing-2);
+}
+
+.alerta-fuga p {
+  margin: var(--spacing-1) 0;
+  font-size: var(--font-size-sm);
+}
+
+.alerta-fuga-ayuda {
+  color: #b91c1c;
+  font-style: italic;
+}
+
+.ingreso-estimado-leyenda {
+  background: var(--color-gray-100);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-600);
+}
+
+.ingreso-estimado-leyenda p {
+  margin: var(--spacing-1) 0;
+}
+
+.ingreso-estimado-leyenda p:first-child {
+  margin-top: 0;
+}

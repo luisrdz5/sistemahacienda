@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as sucursalesController from '../controllers/sucursalesController.js';
+import * as preciosSucursalController from '../controllers/preciosSucursalController.js';
 import { authenticate, isAdmin } from '../middlewares/auth.js';
 
 const router = Router();
@@ -99,5 +100,137 @@ router.put('/:id', authenticate, isAdmin, sucursalesController.update);
  *         description: Sucursal no encontrada
  */
 router.delete('/:id', authenticate, isAdmin, sucursalesController.remove);
+
+// ==================== PRECIOS POR SUCURSAL ====================
+
+/**
+ * @swagger
+ * /api/sucursales/{sucursalId}/precios:
+ *   get:
+ *     summary: Obtener todos los precios de una sucursal
+ *     tags: [Precios Sucursal]
+ *     parameters:
+ *       - in: path
+ *         name: sucursalId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de productos con precios de sucursal
+ */
+router.get('/:sucursalId/precios', authenticate, preciosSucursalController.getPreciosBySucursal);
+
+/**
+ * @swagger
+ * /api/sucursales/{sucursalId}/precios:
+ *   put:
+ *     summary: Actualizar múltiples precios de una sucursal
+ *     tags: [Precios Sucursal]
+ *     parameters:
+ *       - in: path
+ *         name: sucursalId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               precios:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     productoId:
+ *                       type: integer
+ *                     precio:
+ *                       type: number
+ *     responses:
+ *       200:
+ *         description: Precios actualizados
+ */
+router.put('/:sucursalId/precios', authenticate, isAdmin, preciosSucursalController.updatePreciosMasivo);
+
+/**
+ * @swagger
+ * /api/sucursales/{sucursalId}/precios/{productoId}:
+ *   get:
+ *     summary: Obtener precio efectivo de un producto para una sucursal
+ *     tags: [Precios Sucursal]
+ *     parameters:
+ *       - in: path
+ *         name: sucursalId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: productoId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Precio del producto
+ */
+router.get('/:sucursalId/precios/:productoId', authenticate, preciosSucursalController.getPrecioEfectivo);
+
+/**
+ * @swagger
+ * /api/sucursales/{sucursalId}/precios/{productoId}:
+ *   put:
+ *     summary: Establecer precio de un producto para una sucursal
+ *     tags: [Precios Sucursal]
+ *     parameters:
+ *       - in: path
+ *         name: sucursalId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: productoId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               precio:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Precio establecido
+ */
+router.put('/:sucursalId/precios/:productoId', authenticate, isAdmin, preciosSucursalController.setPrecioProducto);
+
+/**
+ * @swagger
+ * /api/sucursales/{sucursalId}/precios/{productoId}:
+ *   delete:
+ *     summary: Eliminar precio personalizado (volver a precio de lista)
+ *     tags: [Precios Sucursal]
+ *     parameters:
+ *       - in: path
+ *         name: sucursalId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: productoId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Precio eliminado
+ */
+router.delete('/:sucursalId/precios/:productoId', authenticate, isAdmin, preciosSucursalController.removePrecioProducto);
 
 export default router;

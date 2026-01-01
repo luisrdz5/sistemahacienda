@@ -488,3 +488,63 @@
     font-size: var(--font-size-lg);
   }
 }
+
+/* Análisis de consumo */
+.detalle-consumo {
+  grid-column: span 2;
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
+  border-top: 1px dashed var(--color-gray-300);
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+}
+
+.consumo-titulo {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-2);
+  font-weight: 600;
+}
+
+.consumo-datos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.consumo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-1) 0;
+}
+
+.consumo-item.consumo-total {
+  font-weight: 600;
+  border-top: 1px solid var(--color-gray-200);
+  border-bottom: 1px solid var(--color-gray-200);
+  padding: var(--spacing-2) 0;
+  margin: var(--spacing-1) 0;
+}
+
+.consumo-alerta-fuga {
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-3);
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+  border-radius: var(--border-radius);
+  color: #991b1b;
+}
+
+.consumo-alerta-fuga strong {
+  display: block;
+  margin-bottom: var(--spacing-1);
+}
+
+.consumo-alerta-fuga p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}

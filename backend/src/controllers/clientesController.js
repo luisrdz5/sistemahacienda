@@ -1,4 +1,4 @@
-import { Cliente, PrecioCliente, Producto } from '../models/index.js';
+import { Cliente, PrecioCliente, PrecioSucursal, Producto } from '../models/index.js';
 
 /**
  * Listar clientes
@@ -170,27 +170,63 @@ export const remove = async (req, res, next) => {
 
 /**
  * Obtener precio de un producto para un cliente específico
- * Retorna el precio personalizado o el precio de lista
+ * Jerarquía: PrecioCliente > PrecioSucursal > PrecioLista
+ *
+ * Query params opcionales:
+ * - sucursalId: ID de la sucursal para buscar precio de sucursal
  */
 export const getPrecioProducto = async (req, res, next) => {
   try {
     const { clienteId, productoId } = req.params;
+    const { sucursalId } = req.query;
 
     const producto = await Producto.findByPk(productoId);
     if (!producto) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
 
-    // Buscar precio personalizado
+    // 1. Buscar precio personalizado del cliente (máxima prioridad)
     const precioCliente = await PrecioCliente.findOne({
       where: { clienteId, productoId }
     });
 
+    if (precioCliente) {
+      return res.json({
+        productoId: parseInt(productoId),
+        clienteId: parseInt(clienteId),
+        sucursalId: sucursalId ? parseInt(sucursalId) : null,
+        precio: parseFloat(precioCliente.precio),
+        tipoPrecios: 'cliente',
+        precioLista: parseFloat(producto.precioLista)
+      });
+    }
+
+    // 2. Buscar precio de sucursal si se proporciona sucursalId
+    if (sucursalId) {
+      const precioSucursal = await PrecioSucursal.findOne({
+        where: { sucursalId, productoId }
+      });
+
+      if (precioSucursal) {
+        return res.json({
+          productoId: parseInt(productoId),
+          clienteId: parseInt(clienteId),
+          sucursalId: parseInt(sucursalId),
+          precio: parseFloat(precioSucursal.precio),
+          tipoPrecio: 'sucursal',
+          precioLista: parseFloat(producto.precioLista)
+        });
+      }
+    }
+
+    // 3. Retornar precio de lista (fallback)
     res.json({
       productoId: parseInt(productoId),
       clienteId: parseInt(clienteId),
-      precio: precioCliente ? parseFloat(precioCliente.precio) : parseFloat(producto.precioLista),
-      esPrecioPersonalizado: !!precioCliente
+      sucursalId: sucursalId ? parseInt(sucursalId) : null,
+      precio: parseFloat(producto.precioLista),
+      tipoPrecio: 'lista',
+      precioLista: parseFloat(producto.precioLista)
     });
   } catch (error) {
     next(error);

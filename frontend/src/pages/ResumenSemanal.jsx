@@ -26,6 +26,10 @@ function ResumenSemanal() {
   const [error, setError] = useState('');
   const [detalleAbierto, setDetalleAbierto] = useState(null); // { fecha, sucursalId }
 
+  // Estado para el modal de detalle del corte
+  const [modalCorte, setModalCorte] = useState(null);
+  const [loadingCorte, setLoadingCorte] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -60,6 +64,47 @@ function ResumenSemanal() {
   const formatDate = (dateStr) => {
     const date = new Date(dateStr + 'T12:00:00');
     return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+  };
+
+  const formatDateLong = (dateStr) => {
+    const date = new Date(dateStr + 'T12:00:00');
+    return date.toLocaleDateString('es-MX', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  // Abrir modal con detalle del corte
+  const abrirDetalleCorte = async (fecha, sucursalId, sucursalNombre) => {
+    setLoadingCorte(true);
+    try {
+      // Buscar el corte por fecha y sucursal
+      const cortes = await api.get(`/cortes?fecha=${fecha}&sucursalId=${sucursalId}`);
+      if (cortes.length > 0) {
+        const corteCompleto = await api.get(`/cortes/${cortes[0].id}`);
+        setModalCorte({
+          ...corteCompleto,
+          fecha,
+          sucursalNombre
+        });
+      } else {
+        setModalCorte({
+          sinCorte: true,
+          fecha,
+          sucursalNombre
+        });
+      }
+    } catch (err) {
+      console.error('Error cargando detalle del corte:', err);
+    } finally {
+      setLoadingCorte(false);
+    }
+  };
+
+  const cerrarModal = () => {
+    setModalCorte(null);
   };
 
   if (loading) {
@@ -168,6 +213,14 @@ function ResumenSemanal() {
                         setDetalleAbierto(isOpen ? null : { fecha: dia.fecha, sucursalId: s.sucursalId });
                       }
                     };
+
+                    // Para sucursales físicas, hacer clickeable para ver detalle
+                    const handleClickFisica = () => {
+                      if (s.tipo !== 'virtual' && s.estado !== 'pendiente') {
+                        abrirDetalleCorte(dia.fecha, s.sucursalId, s.nombre);
+                      }
+                    };
+
                     return (
                       <td key={s.sucursalId} className={s.tipo === 'virtual' ? 'col-virtual' : ''}>
                         {s.tipo === 'virtual' ? (
@@ -191,12 +244,21 @@ function ResumenSemanal() {
                             )}
                           </div>
                         ) : (
-                          <div className="sucursal-cell">
+                          <div
+                            className={`sucursal-cell ${s.estado !== 'pendiente' ? 'clickable' : ''}`}
+                            onClick={handleClickFisica}
+                            title={s.estado !== 'pendiente' ? 'Click para ver detalle' : ''}
+                          >
                             <span className="venta">{formatMoney(s.venta)}</span>
                             <span className="gasto">-{formatMoney(s.gastos)}</span>
                             <span className={`utilidad ${s.utilidad >= 0 ? 'positive' : 'negative'}`}>
                               {formatMoney(s.utilidad)}
                             </span>
+                            {s.esFuga && (
+                              <span className="badge-fuga" title={`Esperado: ${formatMoney(s.ingresoEstimado)}`}>
+                                Fuga: {formatMoney(Math.abs(s.discrepancia))}
+                              </span>
+                            )}
                           </div>
                         )}
                       </td>
@@ -262,7 +324,161 @@ function ResumenSemanal() {
           <span className="leyenda-color utilidad"></span>
           <span>Utilidad</span>
         </div>
+        <div className="leyenda-item">
+          <span className="leyenda-hint">Click en una sucursal para ver detalle</span>
+        </div>
       </div>
+
+      {/* Modal de detalle del corte */}
+      {(modalCorte || loadingCorte) && (
+        <div className="modal-overlay" onClick={cerrarModal}>
+          <div className="modal-corte" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Detalle del Corte</h2>
+              <button className="modal-close" onClick={cerrarModal}>&times;</button>
+            </div>
+
+            {loadingCorte ? (
+              <div className="modal-loading">Cargando detalle...</div>
+            ) : modalCorte?.sinCorte ? (
+              <div className="modal-body">
+                <p className="modal-sin-datos">No hay corte registrado para este día.</p>
+              </div>
+            ) : (
+              <div className="modal-body">
+                <div className="modal-info-header">
+                  <h3>{modalCorte.sucursalNombre}</h3>
+                  <p className="modal-fecha">{formatDateLong(modalCorte.fecha)}</p>
+                  <span className={`modal-estado ${modalCorte.estado}`}>
+                    {modalCorte.estado === 'completado' ? 'Finalizado' : 'En proceso'}
+                  </span>
+                </div>
+
+                {/* Resumen financiero */}
+                <div className="modal-section">
+                  <h4>Resumen Financiero</h4>
+                  <div className="modal-stats">
+                    <div className="modal-stat">
+                      <span className="label">Efectivo en Caja</span>
+                      <span className="value">{formatMoney(modalCorte.efectivoCaja)}</span>
+                    </div>
+                    <div className="modal-stat">
+                      <span className="label">Total Gastos</span>
+                      <span className="value gasto">{formatMoney(modalCorte.totalGastos)}</span>
+                    </div>
+                    <div className="modal-stat destacado">
+                      <span className="label">Venta Total</span>
+                      <span className="value">{formatMoney(parseFloat(modalCorte.efectivoCaja || 0) + parseFloat(modalCorte.totalGastos || 0))}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desglose de gastos */}
+                {modalCorte.gastos?.length > 0 && (
+                  <div className="modal-section">
+                    <h4>Desglose de Gastos</h4>
+                    <div className="modal-gastos-lista">
+                      {modalCorte.gastos.map((g, idx) => (
+                        <div key={idx} className="modal-gasto-item">
+                          <span className="categoria">{g.categoria?.nombre || 'Sin categoría'}</span>
+                          <span className="descripcion">{g.descripcion || '-'}</span>
+                          <span className="monto">{formatMoney(g.monto)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Análisis de producción */}
+                {(modalCorte.kgMasa > 0 || modalCorte.consumoHarina > 0) && (
+                  <div className="modal-section">
+                    <h4>Análisis de Producción</h4>
+                    <div className="modal-produccion">
+                      {modalCorte.kgMasa > 0 && (
+                        <div className="produccion-item">
+                          <span className="label">Masa consumida:</span>
+                          <span className="value">{modalCorte.descripcionConsumoMasa || `${modalCorte.kgMasa} kg`}</span>
+                        </div>
+                      )}
+                      {modalCorte.consumoHarina > 0 && (
+                        <div className="produccion-item">
+                          <span className="label">Harina consumida:</span>
+                          <span className="value">{modalCorte.consumoHarina} bultos</span>
+                        </div>
+                      )}
+                      <div className="produccion-item">
+                        <span className="label">Tortilla producida:</span>
+                        <span className="value">{Math.ceil(modalCorte.kgTortillaTotal || 0)} kg</span>
+                      </div>
+                      <div className="produccion-item">
+                        <span className="label">Precio por kg (sucursal):</span>
+                        <span className="value">{formatMoney(modalCorte.precioTortilla)}/kg</span>
+                      </div>
+                      <div className="produccion-item destacado">
+                        <span className="label">Ingreso esperado:</span>
+                        <span className="value">{formatMoney(modalCorte.ingresoEstimado)}</span>
+                      </div>
+                      <p className="produccion-formula">
+                        {Math.ceil(modalCorte.kgTortillaTotal || 0)} kg × {formatMoney(modalCorte.precioTortilla)} = {formatMoney(modalCorte.ingresoEstimado)}
+                      </p>
+                    </div>
+
+                    {/* Análisis de fuga */}
+                    {modalCorte.tieneDiscrepancia && (
+                      <div className="modal-alerta-fuga">
+                        <h5>Posible Fuga Detectada</h5>
+                        <div className="fuga-detalle">
+                          <div className="fuga-row">
+                            <span>Ingreso esperado:</span>
+                            <span>{formatMoney(modalCorte.ingresoEstimado)}</span>
+                          </div>
+                          <div className="fuga-row">
+                            <span>Venta real:</span>
+                            <span>{formatMoney(parseFloat(modalCorte.efectivoCaja || 0) + parseFloat(modalCorte.totalGastos || 0))}</span>
+                          </div>
+                          <div className="fuga-row diferencia">
+                            <span>Diferencia:</span>
+                            <span>{formatMoney(Math.abs(modalCorte.discrepancia))}</span>
+                          </div>
+                        </div>
+                        <p className="fuga-ayuda">
+                          La venta es menor al ingreso esperado basado en el consumo de insumos.
+                          Verifica los datos capturados o investiga posibles causas.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Sin discrepancia */}
+                    {!modalCorte.tieneDiscrepancia && modalCorte.ingresoEstimado > 0 && (
+                      <div className="modal-sin-fuga">
+                        <span className="check">✓</span>
+                        <span>La venta está dentro del rango esperado</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Inventario de harina */}
+                {(modalCorte.inventarioNixta > 0 || modalCorte.inventarioExtra > 0) && (
+                  <div className="modal-section">
+                    <h4>Consumo de Harina</h4>
+                    <div className="modal-harina">
+                      <div className="harina-item">
+                        <span className="label">Harina Nixta:</span>
+                        <span className="value">{modalCorte.inventarioNixta || 0} bultos</span>
+                      </div>
+                      <div className="harina-item">
+                        <span className="label">Harina Extra:</span>
+                        <span className="value">{modalCorte.inventarioExtra || 0} bultos</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

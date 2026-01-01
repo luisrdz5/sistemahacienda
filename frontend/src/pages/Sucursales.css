@@ -26,3 +26,93 @@
   font-size: var(--font-size-sm);
   margin: 0;
 }
+
+.sucursal-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: auto;
+}
+
+/* Modal de Precios */
+.precios-sucursal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: var(--spacing-2);
+}
+
+.precio-sucursal-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+}
+
+.precio-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.precio-nombre {
+  font-weight: 500;
+  color: var(--color-gray-800);
+}
+
+.precio-unidad {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.precio-lista-ref {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-400);
+}
+
+.precio-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.precio-currency {
+  color: var(--color-gray-500);
+  font-weight: 500;
+}
+
+.precio-input {
+  width: 100px;
+  text-align: right;
+}
+
+.form-help {
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-4);
+}
+
+.badge-info {
+  background-color: var(--color-info);
+  color: white;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .precio-sucursal-item {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-2);
+  }
+
+  .precio-input-wrapper {
+    justify-content: flex-end;
+  }
+
+  .precio-input {
+    width: 120px;
+  }
+}

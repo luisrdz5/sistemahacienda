@@ -258,13 +258,40 @@ function Captura() {
 
           {!isVirtualSucursal && (
             <section className="captura-section">
-              <h2>Inventario de Harina</h2>
+              <h2>Consumo de Harina (bultos)</h2>
               <InventarioHarina
                 nixta={corte.inventarioNixta || 0}
                 extra={corte.inventarioExtra || 0}
                 onChange={(inventario) => actualizarCorte(inventario)}
                 disabled={!canEdit}
               />
+            </section>
+          )}
+
+          {!isVirtualSucursal && corte.montoMasa > 0 && (
+            <section className="captura-section consumo-masa-section">
+              <h2>Consumo de Masa</h2>
+              <div className="consumo-masa-calculado">
+                <div className="consumo-masa-info">
+                  <div className="consumo-masa-row">
+                    <span className="consumo-label">Gasto registrado:</span>
+                    <span className="consumo-valor">${(corte.montoMasa || 0).toLocaleString('es-MX')}</span>
+                  </div>
+                  <div className="consumo-masa-row">
+                    <span className="consumo-label">Precio por maleta:</span>
+                    <span className="consumo-valor">${(corte.precioMaleta || 340).toLocaleString('es-MX')}</span>
+                  </div>
+                  <div className="consumo-masa-row consumo-masa-total">
+                    <span className="consumo-label">Consumo calculado:</span>
+                    <span className="consumo-valor consumo-destacado">
+                      {corte.descripcionConsumoMasa || `${(corte.kgMasa || 0).toFixed(1)} kg`}
+                    </span>
+                  </div>
+                </div>
+                <p className="consumo-masa-nota">
+                  El consumo se calcula automáticamente al registrar un gasto de categoría "Masa"
+                </p>
+              </div>
             </section>
           )}
 
@@ -313,6 +340,64 @@ function Captura() {
               <div className="resumen-item resumen-total">
                 <span>Venta Total</span>
                 <strong>${((parseInt(efectivoLocal) || 0) + Math.round(parseFloat(corte.totalGastos) || 0)).toLocaleString('es-MX')}</strong>
+              </div>
+            </section>
+          )}
+
+          {!isVirtualSucursal && corte.ingresoEstimado > 0 && (
+            <section className="captura-section ingreso-estimado-section">
+              <h2>Ingreso Mínimo Esperado</h2>
+              <div className="ingreso-estimado-card">
+                <div className="ingreso-estimado-calculo">
+                  {corte.kgMasa > 0 && (
+                    <div className="calculo-item">
+                      <span>Masa consumida:</span>
+                      <span>{corte.descripcionConsumoMasa}</span>
+                    </div>
+                  )}
+                  <div className="calculo-item">
+                    <span>Tortilla de masa:</span>
+                    <span>{(corte.kgTortillaMasa || 0).toFixed(1)} kg</span>
+                  </div>
+                  {corte.consumoHarina > 0 && (
+                    <div className="calculo-item">
+                      <span>Tortilla de harina:</span>
+                      <span>{(corte.kgTortillaHarina || 0).toFixed(1)} kg</span>
+                    </div>
+                  )}
+                  <div className="calculo-item calculo-total">
+                    <span>Total tortilla producida:</span>
+                    <span>{(corte.kgTortillaTotal || 0).toFixed(1)} kg</span>
+                  </div>
+                  <div className="calculo-item">
+                    <span>Precio por kg:</span>
+                    <span>${(corte.precioTortilla || 25).toFixed(2)}</span>
+                  </div>
+                </div>
+                <div className="ingreso-estimado-valor">
+                  <span>Ingreso esperado:</span>
+                  <strong>${(corte.ingresoEstimado || 0).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong>
+                </div>
+                {(() => {
+                  const ventaActual = (parseInt(efectivoLocal) || 0) + Math.round(parseFloat(corte.totalGastos) || 0);
+                  const ingresoEsperado = corte.ingresoEstimado || 0;
+                  const diferencia = ingresoEsperado - ventaActual;
+                  const hayFuga = ventaActual < ingresoEsperado;
+
+                  return hayFuga && (
+                    <div className="alerta-fuga">
+                      <strong>Atención: La venta (${ventaActual.toLocaleString('es-MX')}) es menor al ingreso esperado.</strong>
+                      <p>Diferencia: ${diferencia.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                      <p className="alerta-fuga-ayuda">Por favor verifica los datos capturados o reporta la situación.</p>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="ingreso-estimado-leyenda">
+                <p><strong>¿Cómo se calcula?</strong></p>
+                <p>El consumo de masa se detecta del gasto "Masa" (${corte.precioMaleta || 340}/maleta = 50 kg).</p>
+                <p>De cada maleta de masa salen 40 kg de tortilla.</p>
+                <p>De cada bulto de harina (20 kg) salen 35 kg de tortilla.</p>
               </div>
             </section>
           )}

@@ -322,6 +322,41 @@ function Auditoria() {
                         </div>
                       </div>
                     )}
+
+                    {/* Análisis de consumo vs ingreso estimado */}
+                    {(s.consumoMasa > 0 || s.consumoHarina > 0) && (
+                      <div className="detalle-consumo">
+                        <span className="consumo-titulo">Análisis de Producción:</span>
+                        <div className="consumo-datos">
+                          <div className="consumo-item">
+                            <span>Masa consumida:</span>
+                            <span>{s.descripcionConsumoMasa || `${s.consumoMasa} kg`}</span>
+                          </div>
+                          <div className="consumo-item">
+                            <span>Harina consumida:</span>
+                            <span>{s.consumoHarina} bultos</span>
+                          </div>
+                          <div className="consumo-item consumo-total">
+                            <span>Tortilla producida:</span>
+                            <span>{(s.kgTortillaTotal || 0).toFixed(1)} kg</span>
+                          </div>
+                          <div className="consumo-item">
+                            <span>Ingreso esperado:</span>
+                            <span className="dato-success">{formatMoney(s.ingresoEstimado)}</span>
+                          </div>
+                          <div className="consumo-item">
+                            <span>Venta real:</span>
+                            <span>{formatMoney(s.ventaTotal)}</span>
+                          </div>
+                        </div>
+                        {s.esFuga && (
+                          <div className="consumo-alerta-fuga">
+                            <strong>Posible fuga detectada</strong>
+                            <p>Diferencia: {formatMoney(Math.abs(s.discrepancia))}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 

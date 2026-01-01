@@ -18,6 +18,7 @@ import Productos from './pages/Productos';
 import Clientes from './pages/Clientes';
 import Pedidos from './pages/Pedidos';
 import CortePedidos from './pages/CortePedidos';
+import Insumos from './pages/Insumos';
 
 // Layout
 import Layout from './components/layout/Layout';
@@ -109,6 +110,11 @@ function App() {
         <Route path="clientes" element={
           <PrivateRoute allowedRoles={['admin', 'administrador_repartidor']}>
             <Clientes />
+          </PrivateRoute>
+        } />
+        <Route path="insumos" element={
+          <PrivateRoute adminOnly>
+            <Insumos />
           </PrivateRoute>
         } />
         <Route path="pedidos" element={

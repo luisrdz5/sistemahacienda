@@ -1,5 +1,144 @@
 import { Op, fn, col, literal } from 'sequelize';
-import { Corte, Gasto, Sucursal, CategoriaGasto, sequelize } from '../models/index.js';
+import { Corte, Gasto, Sucursal, CategoriaGasto, Producto, PrecioSucursal, Insumo, PrecioInsumo, sequelize } from '../models/index.js';
+
+/**
+ * Constantes de conversión para cálculo de ingreso estimado
+ */
+const KG_POR_MALETA = 50;
+const KG_TORTILLA_POR_MALETA_MASA = 40;
+const KG_TORTILLA_POR_BULTO_HARINA = 35;
+const PRECIO_MALETA_DEFAULT = 340;
+
+/**
+ * Obtener precio actual de la masa (por maleta)
+ */
+const getPrecioMasa = async () => {
+  try {
+    const insumoMasa = await Insumo.findOne({
+      where: { nombre: 'Masa', activo: true }
+    });
+
+    if (!insumoMasa) {
+      return PRECIO_MALETA_DEFAULT;
+    }
+
+    const precioActual = await PrecioInsumo.findOne({
+      where: { insumoId: insumoMasa.id },
+      order: [['fechaInicio', 'DESC']]
+    });
+
+    return precioActual ? parseFloat(precioActual.precio) : PRECIO_MALETA_DEFAULT;
+  } catch (error) {
+    console.error('Error obteniendo precio de masa:', error);
+    return PRECIO_MALETA_DEFAULT;
+  }
+};
+
+/**
+ * Calcular consumo de masa desde los gastos del corte
+ */
+const calcularConsumoMasaDesdeGastos = async (gastos, precioMaleta) => {
+  const gastosMasa = gastos.filter(g =>
+    g.categoria?.nombre?.toLowerCase() === 'masa'
+  );
+
+  if (gastosMasa.length === 0) {
+    return { kgMasa: 0, descripcionConsumo: null };
+  }
+
+  const montoMasa = gastosMasa.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
+  const precioPorKg = precioMaleta / KG_POR_MALETA;
+  let kgMasa = Math.ceil(montoMasa / precioPorKg * 10) / 10;
+
+  let restante = kgMasa;
+  const maletas = Math.floor(restante / KG_POR_MALETA);
+  restante -= maletas * KG_POR_MALETA;
+  const mediaMaleta = Math.floor(restante / 25);
+  restante -= mediaMaleta * 25;
+  const cuartoMaleta = Math.floor(restante / 12.5);
+  restante -= cuartoMaleta * 12.5;
+  const kgRestantes = Math.ceil(restante);
+
+  const partes = [];
+  if (maletas > 0) partes.push(`${maletas} maleta${maletas > 1 ? 's' : ''}`);
+  if (mediaMaleta > 0) partes.push(`${mediaMaleta * 0.5} maleta`);
+  if (cuartoMaleta > 0) partes.push(`${cuartoMaleta * 0.25} maleta`);
+  if (kgRestantes > 0) partes.push(`${kgRestantes} kg`);
+
+  return {
+    kgMasa,
+    descripcionConsumo: partes.length > 0 ? partes.join(' + ') : '0 kg'
+  };
+};
+
+/**
+ * Calcular ingreso estimado basado en consumo de masa y harina
+ * El consumo de masa se calcula automáticamente desde los gastos de categoría "Masa"
+ */
+const calcularIngresoEstimadoCorte = async (corte, precioTortilla, precioMaleta) => {
+  const consumoNixta = parseFloat(corte.inventarioNixta || 0);
+  const consumoExtra = parseFloat(corte.inventarioExtra || 0);
+
+  // Calcular consumo de masa desde gastos
+  const consumoMasaData = await calcularConsumoMasaDesdeGastos(corte.gastos || [], precioMaleta);
+
+  // Calcular kg de tortilla producida
+  const kgTortillaMasa = (consumoMasaData.kgMasa / KG_POR_MALETA) * KG_TORTILLA_POR_MALETA_MASA;
+  const kgTortillaHarina = (consumoNixta + consumoExtra) * KG_TORTILLA_POR_BULTO_HARINA;
+  const kgTortillaTotal = kgTortillaMasa + kgTortillaHarina;
+
+  return {
+    kgMasa: consumoMasaData.kgMasa,
+    descripcionConsumoMasa: consumoMasaData.descripcionConsumo,
+    consumoHarina: consumoNixta + consumoExtra,
+    kgTortillaMasa,
+    kgTortillaHarina,
+    kgTortillaTotal,
+    ingresoEstimado: Math.round(kgTortillaTotal * precioTortilla * 100) / 100
+  };
+};
+
+/**
+ * Obtener mapa de precios de tortilla por sucursal
+ */
+const getPreciosTortillaPorSucursal = async (sucursalIds) => {
+  const precios = {};
+  const defaultPrice = 25;
+
+  try {
+    const producto = await Producto.findOne({
+      where: { nombre: 'Tortillas', activo: true }
+    });
+
+    if (!producto) {
+      sucursalIds.forEach(id => precios[id] = defaultPrice);
+      return precios;
+    }
+
+    const precioLista = parseFloat(producto.precioLista);
+
+    const preciosSucursal = await PrecioSucursal.findAll({
+      where: {
+        sucursalId: { [Op.in]: sucursalIds },
+        productoId: producto.id
+      }
+    });
+
+    const preciosMap = {};
+    preciosSucursal.forEach(ps => {
+      preciosMap[ps.sucursalId] = parseFloat(ps.precio);
+    });
+
+    sucursalIds.forEach(id => {
+      precios[id] = preciosMap[id] || precioLista;
+    });
+  } catch (error) {
+    console.error('Error obteniendo precios tortilla:', error);
+    sucursalIds.forEach(id => precios[id] = defaultPrice);
+  }
+
+  return precios;
+};
 
 /**
  * Resumen del día
@@ -214,9 +353,16 @@ export const getAuditoria = async (req, res, next) => {
       ]
     });
 
+    // Obtener precios de tortilla por sucursal para calcular ingreso estimado
+    const sucursalIds = sucursales.map(s => s.id);
+    const preciosTortilla = await getPreciosTortillaPorSucursal(sucursalIds);
+
+    // Obtener precio de masa para calcular consumo desde gastos
+    const precioMaleta = await getPrecioMasa();
+
     // Crear mapa de cortes por fecha y sucursal
     const cortesMap = {};
-    cortes.forEach(corte => {
+    for (const corte of cortes) {
       const key = `${corte.fecha}_${corte.sucursalId}`;
       const totalGastos = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
       const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
@@ -235,6 +381,13 @@ export const getAuditoria = async (req, res, next) => {
       const esVirtual = corte.sucursal?.tipo === 'virtual';
       const ventaReal = esVirtual ? 0 : ventaCalculada;
 
+      // Calcular ingreso estimado (solo para sucursales físicas)
+      let estimacion = null;
+      if (!esVirtual) {
+        const precioTortilla = preciosTortilla[corte.sucursalId] || 25;
+        estimacion = await calcularIngresoEstimadoCorte(corte, precioTortilla, precioMaleta);
+      }
+
       cortesMap[key] = {
         id: corte.id,
         estado: corte.estado,
@@ -243,9 +396,17 @@ export const getAuditoria = async (req, res, next) => {
         totalGastos,
         utilidad: esVirtual ? -totalGastos : efectivoCaja, // virtuales: solo gasto, físicas: efectivo es utilidad
         gastos: gastosDetalle,
-        tipoSucursal: corte.sucursal?.tipo
+        tipoSucursal: corte.sucursal?.tipo,
+        // Datos de estimación de ingreso
+        consumoMasa: estimacion?.kgMasa || 0,
+        descripcionConsumoMasa: estimacion?.descripcionConsumoMasa || null,
+        consumoHarina: estimacion?.consumoHarina || 0,
+        kgTortillaTotal: estimacion?.kgTortillaTotal || 0,
+        ingresoEstimado: estimacion?.ingresoEstimado || 0,
+        discrepancia: estimacion ? Math.round((ventaReal - estimacion.ingresoEstimado) * 100) / 100 : 0,
+        esFuga: estimacion ? ventaReal < estimacion.ingresoEstimado : false
       };
-    });
+    }
 
     // Generar estado por día
     const diasDelMes = ultimoDia.getDate();
@@ -311,7 +472,14 @@ export const getAuditoria = async (req, res, next) => {
           efectivoCaja: corteData?.efectivoCaja || 0,
           totalGastos: corteData?.totalGastos || 0,
           utilidad: corteData?.utilidad || 0,
-          gastos: corteData?.gastos || []
+          gastos: corteData?.gastos || [],
+          // Datos de estimación de ingreso
+          consumoMasa: corteData?.consumoMasa || 0,
+          consumoHarina: corteData?.consumoHarina || 0,
+          kgTortillaTotal: corteData?.kgTortillaTotal || 0,
+          ingresoEstimado: corteData?.ingresoEstimado || 0,
+          discrepancia: corteData?.discrepancia || 0,
+          esFuga: corteData?.esFuga || false
         };
       });
 
@@ -443,9 +611,16 @@ export const getResumenSemanal = async (req, res, next) => {
       ]
     });
 
+    // Obtener precios de tortilla por sucursal para calcular ingreso estimado
+    const sucursalIds = sucursales.map(s => s.id);
+    const preciosTortilla = await getPreciosTortillaPorSucursal(sucursalIds);
+
+    // Obtener precio de masa para calcular consumo desde gastos
+    const precioMaleta = await getPrecioMasa();
+
     // Crear mapa de cortes
     const cortesMap = {};
-    cortes.forEach(corte => {
+    for (const corte of cortes) {
       const key = `${corte.fecha}_${corte.sucursalId}`;
       const totalGastos = corte.gastos.reduce((sum, g) => sum + parseFloat(g.monto || 0), 0);
       const efectivoCaja = parseFloat(corte.efectivoCaja || 0);
@@ -460,6 +635,13 @@ export const getResumenSemanal = async (req, res, next) => {
         categoria: g.categoria?.nombre || 'Sin categoría'
       }));
 
+      // Calcular ingreso estimado (solo para sucursales físicas)
+      let estimacion = null;
+      if (corte.sucursal.tipo === 'fisica') {
+        const precioTortilla = preciosTortilla[corte.sucursalId] || 25;
+        estimacion = await calcularIngresoEstimadoCorte(corte, precioTortilla, precioMaleta);
+      }
+
       cortesMap[key] = {
         id: corte.id,
         estado: corte.estado,
@@ -467,9 +649,17 @@ export const getResumenSemanal = async (req, res, next) => {
         efectivoCaja,
         totalGastos,
         tipo: corte.sucursal.tipo,
-        gastos: gastosDetalle
+        gastos: gastosDetalle,
+        // Datos de estimación
+        consumoMasa: estimacion?.kgMasa || 0,
+        descripcionConsumoMasa: estimacion?.descripcionConsumoMasa || null,
+        consumoHarina: estimacion?.consumoHarina || 0,
+        kgTortillaTotal: estimacion?.kgTortillaTotal || 0,
+        ingresoEstimado: estimacion?.ingresoEstimado || 0,
+        discrepancia: estimacion ? Math.round((ventaCalculada - estimacion.ingresoEstimado) * 100) / 100 : 0,
+        esFuga: estimacion ? ventaCalculada < estimacion.ingresoEstimado : false
       };
-    });
+    }
 
     // Generar datos por día
     const dias = [];
@@ -501,7 +691,14 @@ export const getResumenSemanal = async (req, res, next) => {
           gastos: gasto,
           utilidad: venta - gasto,
           estado: corteData?.estado || 'pendiente',
-          gastosDetalle: corteData?.gastos || []
+          gastosDetalle: corteData?.gastos || [],
+          // Datos de estimación de ingreso
+          consumoMasa: corteData?.consumoMasa || 0,
+          consumoHarina: corteData?.consumoHarina || 0,
+          kgTortillaTotal: corteData?.kgTortillaTotal || 0,
+          ingresoEstimado: corteData?.ingresoEstimado || 0,
+          discrepancia: corteData?.discrepancia || 0,
+          esFuga: corteData?.esFuga || false
         };
       });
 

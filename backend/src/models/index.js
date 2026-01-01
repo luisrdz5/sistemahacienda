@@ -11,6 +11,9 @@ import PrecioCliente from './PrecioCliente.js';
 import Pedido from './Pedido.js';
 import DetallePedido from './DetallePedido.js';
 import CortePedidos from './CortePedidos.js';
+import PrecioSucursal from './PrecioSucursal.js';
+import Insumo from './Insumo.js';
+import PrecioInsumo from './PrecioInsumo.js';
 
 // Asociaciones
 
@@ -46,6 +49,14 @@ PrecioCliente.belongsTo(Cliente, { foreignKey: 'clienteId', as: 'cliente' });
 Producto.hasMany(PrecioCliente, { foreignKey: 'productoId', as: 'preciosClientes' });
 PrecioCliente.belongsTo(Producto, { foreignKey: 'productoId', as: 'producto' });
 
+// Sucursal - PrecioSucursal
+Sucursal.hasMany(PrecioSucursal, { foreignKey: 'sucursalId', as: 'precios' });
+PrecioSucursal.belongsTo(Sucursal, { foreignKey: 'sucursalId', as: 'sucursal' });
+
+// Producto - PrecioSucursal
+Producto.hasMany(PrecioSucursal, { foreignKey: 'productoId', as: 'preciosSucursales' });
+PrecioSucursal.belongsTo(Producto, { foreignKey: 'productoId', as: 'producto' });
+
 // Pedido - Cliente
 Pedido.belongsTo(Cliente, { foreignKey: 'clienteId', as: 'cliente' });
 Cliente.hasMany(Pedido, { foreignKey: 'clienteId', as: 'pedidos' });
@@ -70,6 +81,10 @@ Producto.hasMany(DetallePedido, { foreignKey: 'productoId', as: 'detallesPedidos
 CortePedidos.belongsTo(Usuario, { foreignKey: 'repartidorId', as: 'repartidor' });
 Usuario.hasMany(CortePedidos, { foreignKey: 'repartidorId', as: 'cortesPedidos' });
 
+// Insumo - PrecioInsumo
+Insumo.hasMany(PrecioInsumo, { foreignKey: 'insumoId', as: 'precios' });
+PrecioInsumo.belongsTo(Insumo, { foreignKey: 'insumoId', as: 'insumo' });
+
 export {
   sequelize,
   Usuario,
@@ -81,7 +96,10 @@ export {
   Producto,
   Cliente,
   PrecioCliente,
+  PrecioSucursal,
   Pedido,
   DetallePedido,
-  CortePedidos
+  CortePedidos,
+  Insumo,
+  PrecioInsumo
 };
