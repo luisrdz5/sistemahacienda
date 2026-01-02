@@ -14,6 +14,7 @@ import CortePedidos from './CortePedidos.js';
 import PrecioSucursal from './PrecioSucursal.js';
 import Insumo from './Insumo.js';
 import PrecioInsumo from './PrecioInsumo.js';
+import Abono from './Abono.js';
 
 // Asociaciones
 
@@ -85,6 +86,14 @@ Usuario.hasMany(CortePedidos, { foreignKey: 'repartidorId', as: 'cortesPedidos' 
 Insumo.hasMany(PrecioInsumo, { foreignKey: 'insumoId', as: 'precios' });
 PrecioInsumo.belongsTo(Insumo, { foreignKey: 'insumoId', as: 'insumo' });
 
+// Pedido - Abono
+Pedido.hasMany(Abono, { foreignKey: 'pedidoId', as: 'abonos' });
+Abono.belongsTo(Pedido, { foreignKey: 'pedidoId', as: 'pedido' });
+
+// Abono - Usuario (registrado por)
+Abono.belongsTo(Usuario, { foreignKey: 'registradoPorId', as: 'registradoPor' });
+Usuario.hasMany(Abono, { foreignKey: 'registradoPorId', as: 'abonosRegistrados' });
+
 export {
   sequelize,
   Usuario,
@@ -101,5 +110,6 @@ export {
   DetallePedido,
   CortePedidos,
   Insumo,
-  PrecioInsumo
+  PrecioInsumo,
+  Abono
 };

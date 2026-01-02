@@ -67,6 +67,46 @@ router.get('/repartidores', authenticate, canManagePedidos, pedidosController.ge
 
 /**
  * @swagger
+ * /api/pedidos/dashboard/repartos-pendientes:
+ *   get:
+ *     summary: Dashboard de repartos pendientes para pantalla de sucursal
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: query
+ *         name: fecha
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Lista de pedidos pendientes con estadisticas
+ */
+router.get('/dashboard/repartos-pendientes', authenticate, canManagePedidos, pedidosController.getRepartosPendientes);
+
+/**
+ * @swagger
+ * /api/pedidos/dashboard/deudores:
+ *   get:
+ *     summary: Resumen de clientes deudores
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: query
+ *         name: periodo
+ *         schema:
+ *           type: string
+ *           enum: [semanal, mensual]
+ *       - in: query
+ *         name: repartidorId
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de clientes con deuda pendiente
+ */
+router.get('/dashboard/deudores', authenticate, canManagePedidos, pedidosController.getClientesDeudores);
+
+/**
+ * @swagger
  * /api/pedidos/{id}:
  *   get:
  *     summary: Obtener pedido por ID
@@ -145,6 +185,24 @@ router.put('/:id', authenticate, canEditPedidos, pedidosController.update);
 
 /**
  * @swagger
+ * /api/pedidos/{id}/preparar:
+ *   put:
+ *     summary: Marcar pedido como preparado (encargado prepara el producto)
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pedido preparado
+ */
+router.put('/:id/preparar', authenticate, canEditPedidos, pedidosController.preparar);
+
+/**
+ * @swagger
  * /api/pedidos/{id}/despachar:
  *   put:
  *     summary: Marcar pedido como en camino (sale de sucursal)
@@ -196,6 +254,58 @@ router.put('/:id/entregar', authenticate, canManagePedidos, pedidosController.en
  *         description: Pedido cancelado
  */
 router.put('/:id/cancelar', authenticate, isAdminRepartidor, pedidosController.cancelar);
+
+/**
+ * @swagger
+ * /api/pedidos/{id}/abonos:
+ *   get:
+ *     summary: Obtener historial de abonos de un pedido
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de abonos del pedido
+ */
+router.get('/:id/abonos', authenticate, canManagePedidos, pedidosController.getAbonos);
+
+/**
+ * @swagger
+ * /api/pedidos/{id}/abonos:
+ *   post:
+ *     summary: Registrar abono adicional (solo admin)
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - monto
+ *             properties:
+ *               monto:
+ *                 type: number
+ *               tipo:
+ *                 type: string
+ *                 enum: [efectivo, transferencia, otro]
+ *               notas:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Abono registrado
+ */
+router.post('/:id/abonos', authenticate, isAdminRepartidor, pedidosController.registrarAbono);
 
 /**
  * @swagger

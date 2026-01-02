@@ -1,6 +1,6 @@
 .pedidos-resumen {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: var(--spacing-3);
   margin-bottom: var(--spacing-4);
 }
@@ -35,6 +35,10 @@
 
 .resumen-value.info {
   color: var(--color-primary);
+}
+
+.resumen-value.preparado {
+  color: #0891b2; /* cyan-600 */
 }
 
 .pedidos-filtros {
@@ -73,6 +77,10 @@
 
 .pedido-card.estado-en_camino {
   border-left-color: var(--color-primary);
+}
+
+.pedido-card.estado-preparado {
+  border-left-color: #0891b2; /* cyan-600 */
 }
 
 .pedido-header {
@@ -314,6 +322,11 @@
   color: white;
 }
 
+.badge-preparado {
+  background-color: #0891b2;
+  color: white;
+}
+
 .btn-info {
   background-color: var(--color-primary);
   color: white;
@@ -322,6 +335,36 @@
 
 .btn-info:hover {
   background-color: var(--color-primary-dark, #1d4ed8);
+}
+
+.btn-preparado {
+  background-color: #0891b2;
+  color: white;
+  border: none;
+}
+
+.btn-preparado:hover {
+  background-color: #0e7490;
+}
+
+/* Observaciones y saldo pendiente */
+.pedido-observaciones {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  background: var(--color-warning-light, #fef3c7);
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-2);
+}
+
+.pedido-saldo-pendiente {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-warning-dark, #b45309);
+  background: var(--color-warning-light, #fef3c7);
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-2);
 }
 
 @media (max-width: 768px) {

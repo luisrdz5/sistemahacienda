@@ -1,0 +1,211 @@
+.deudores-page {
+  min-height: 100vh;
+}
+
+.deudores-filtros {
+  display: flex;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.deudores-filtros .form-group {
+  min-width: 150px;
+}
+
+/* Stats */
+.deudores-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.deudores-stats .stat-card {
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-4);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.deudores-stats .stat-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: var(--spacing-2);
+  color: var(--color-gray-800);
+}
+
+.deudores-stats .stat-monto .stat-value {
+  color: var(--color-warning-dark, #b45309);
+}
+
+.deudores-stats .stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+/* Lista */
+.deudores-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.deudor-card {
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.deudor-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.deudor-header:hover {
+  background: var(--color-gray-50);
+}
+
+.deudor-info {
+  flex: 1;
+}
+
+.deudor-info h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.deudor-pedidos {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.deudor-monto {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-warning-dark, #b45309);
+}
+
+.btn-expandir {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-gray-100);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-expandir:hover {
+  background: var(--color-gray-200);
+}
+
+/* Detalle expandido */
+.deudor-detalle {
+  background: var(--color-gray-50);
+  border-top: 1px solid var(--color-gray-200);
+  padding: var(--spacing-3);
+}
+
+.pedido-deuda {
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+  border-left: 3px solid var(--color-warning);
+}
+
+.pedido-deuda:last-child {
+  margin-bottom: 0;
+}
+
+.pedido-deuda-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+}
+
+.pedido-fecha {
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+.pedido-productos {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.pedido-deuda-montos {
+  display: flex;
+  gap: var(--spacing-4);
+  font-size: var(--font-size-sm);
+}
+
+.pedido-deuda-montos .total {
+  color: var(--color-gray-600);
+}
+
+.pedido-deuda-montos .pagado {
+  color: var(--color-success);
+}
+
+.pedido-deuda-montos .pendiente {
+  color: var(--color-warning-dark, #b45309);
+  font-weight: 600;
+}
+
+.pedido-obs {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  font-style: italic;
+  margin-top: var(--spacing-2);
+  padding-top: var(--spacing-2);
+  border-top: 1px dashed var(--color-gray-200);
+}
+
+.empty-deudores {
+  text-align: center;
+  padding: var(--spacing-6);
+  background: var(--color-gray-50);
+  border-radius: var(--border-radius);
+}
+
+.empty-deudores p {
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .deudores-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .deudores-filtros {
+    flex-direction: column;
+  }
+
+  .pedido-deuda-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-1);
+  }
+
+  .pedido-deuda-montos {
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+  }
+}

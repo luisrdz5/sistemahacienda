@@ -21,6 +21,8 @@ import Clientes from './pages/Clientes';
 import Pedidos from './pages/Pedidos';
 import CortePedidos from './pages/CortePedidos';
 import Insumos from './pages/Insumos';
+import RepartosPendientes from './pages/RepartosPendientes';
+import ClientesDeudores from './pages/ClientesDeudores';
 
 // Layout
 import Layout from './components/layout/Layout';
@@ -133,6 +135,16 @@ function App() {
         <Route path="corte-pedidos" element={
           <PrivateRoute allowedRoles={['admin', 'administrador_repartidor', 'repartidor']}>
             <CortePedidos />
+          </PrivateRoute>
+        } />
+        <Route path="repartos-pendientes" element={
+          <PrivateRoute allowedRoles={['admin', 'administrador_repartidor', 'encargado']}>
+            <RepartosPendientes />
+          </PrivateRoute>
+        } />
+        <Route path="clientes-deudores" element={
+          <PrivateRoute allowedRoles={['admin', 'administrador_repartidor', 'repartidor']}>
+            <ClientesDeudores />
           </PrivateRoute>
         } />
       </Route>

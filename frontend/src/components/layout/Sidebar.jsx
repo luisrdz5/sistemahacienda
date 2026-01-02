@@ -22,7 +22,7 @@ function Sidebar() {
     if (['/dashboard', '/auditoria', '/resumen-semanal', '/resumen-mensual', '/resumen-anual'].includes(path)) {
       sections.dashboards = true;
     }
-    if (['/pedidos', '/corte-pedidos'].includes(path)) {
+    if (['/pedidos', '/corte-pedidos', '/repartos-pendientes', '/clientes-deudores'].includes(path)) {
       sections.pedidos = true;
     }
     if (['/productos', '/clientes', '/insumos', '/usuarios', '/sucursales', '/empleados', '/categorias'].includes(path)) {
@@ -75,6 +75,14 @@ function Sidebar() {
       items: [
         { path: '/pedidos', label: 'Pedidos', icon: '🚚' },
         { path: '/corte-pedidos', label: 'Corte Pedidos', icon: '📋' },
+        // Monitor Repartos - Admin, Admin Repartidor, Encargado
+        ...((isAdmin || isAdminRepartidor || isEncargado) ? [
+          { path: '/repartos-pendientes', label: 'Monitor Repartos', icon: '📺' },
+        ] : []),
+        // Deudores - Admin, Admin Repartidor, Repartidor
+        ...((isAdmin || isAdminRepartidor || isRepartidor) ? [
+          { path: '/clientes-deudores', label: 'Deudores', icon: '💰' },
+        ] : []),
       ]
     }] : []),
 

@@ -1,0 +1,152 @@
+.modal-entrega {
+  width: 90%;
+  max-width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-entrega .modal-body {
+  padding: var(--spacing-4);
+}
+
+/* Info del pedido */
+.entrega-info {
+  background: var(--color-gray-50);
+  padding: var(--spacing-3);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-4);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-1) 0;
+}
+
+.info-label {
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+}
+
+.info-value {
+  font-weight: 500;
+}
+
+.info-total {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Botones de pago rapido */
+.entrega-pago-rapido {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+}
+
+.btn-rapido {
+  padding: var(--spacing-3);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--border-radius);
+  background: var(--color-white);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-rapido:hover {
+  border-color: var(--color-gray-400);
+}
+
+.btn-pago-completo.active {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+}
+
+.btn-sin-pago.active {
+  background: var(--color-warning);
+  border-color: var(--color-warning);
+  color: white;
+}
+
+/* Input de monto */
+.input-monto {
+  font-size: var(--font-size-xl);
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Required indicator */
+.required {
+  color: var(--color-error);
+}
+
+/* Saldo resultante */
+.entrega-saldo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-3);
+  border-radius: var(--border-radius);
+  margin: var(--spacing-4) 0;
+}
+
+.entrega-saldo.pagado {
+  background: var(--color-success-light, #dcfce7);
+  border: 1px solid var(--color-success);
+}
+
+.entrega-saldo.deuda {
+  background: var(--color-warning-light, #fef3c7);
+  border: 1px solid var(--color-warning);
+}
+
+.saldo-label {
+  font-weight: 500;
+}
+
+.saldo-value {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.entrega-saldo.deuda .saldo-value {
+  color: var(--color-warning-dark, #b45309);
+}
+
+.entrega-saldo.pagado .saldo-value {
+  color: var(--color-success-dark, #166534);
+}
+
+/* Actions */
+.modal-entrega .modal-actions {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: flex-end;
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .modal-entrega {
+    width: 95%;
+    margin: var(--spacing-2);
+  }
+
+  .entrega-pago-rapido {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-entrega .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-entrega .modal-actions .btn {
+    width: 100%;
+  }
+}

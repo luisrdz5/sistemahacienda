@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
+import ModalEntrega from '../components/pedidos/ModalEntrega';
 import './Pedidos.css';
 
 function Pedidos() {
@@ -16,6 +17,7 @@ function Pedidos() {
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroRepartidor, setFiltroRepartidor] = useState('');
+  const [pedidoEntrega, setPedidoEntrega] = useState(null); // Para el modal de entrega
 
   const isAdmin = usuario?.rol === 'admin';
   const isAdminRepartidor = usuario?.rol === 'administrador_repartidor';
@@ -88,6 +90,15 @@ function Pedidos() {
     setShowForm(true);
   };
 
+  const handlePreparar = async (pedido) => {
+    try {
+      await api.put(`/pedidos/${pedido.id}/preparar`);
+      cargarPedidos();
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   const handleDespachar = async (pedido) => {
     try {
       await api.put(`/pedidos/${pedido.id}/despachar`);
@@ -97,9 +108,16 @@ function Pedidos() {
     }
   };
 
-  const handleEntregar = async (pedido) => {
+  // Abre el modal de entrega para registrar pago
+  const handleEntregar = (pedido) => {
+    setPedidoEntrega(pedido);
+  };
+
+  // Confirma la entrega con datos de pago
+  const handleConfirmarEntrega = async (datosPago) => {
     try {
-      await api.put(`/pedidos/${pedido.id}/entregar`);
+      await api.put(`/pedidos/${pedidoEntrega.id}/entregar`, datosPago);
+      setPedidoEntrega(null);
       cargarPedidos();
     } catch (error) {
       alert(error.message);
@@ -126,6 +144,7 @@ function Pedidos() {
   const getEstadoBadge = (estado) => {
     const badges = {
       pendiente: 'badge-warning',
+      preparado: 'badge-preparado',
       en_camino: 'badge-info',
       entregado: 'badge-success',
       cancelado: 'badge-error'
@@ -136,6 +155,7 @@ function Pedidos() {
   const getEstadoLabel = (estado) => {
     const labels = {
       pendiente: 'Pendiente',
+      preparado: 'Preparado',
       en_camino: 'En Camino',
       entregado: 'Entregado',
       cancelado: 'Cancelado'
@@ -169,6 +189,10 @@ function Pedidos() {
             <span className="resumen-value warning">{resumen.pedidosPendientes}</span>
           </div>
           <div className="resumen-card">
+            <span className="resumen-label">Preparados</span>
+            <span className="resumen-value preparado">{resumen.pedidosPreparados || 0}</span>
+          </div>
+          <div className="resumen-card">
             <span className="resumen-label">En Camino</span>
             <span className="resumen-value info">{resumen.pedidosEnCamino || 0}</span>
           </div>
@@ -177,8 +201,8 @@ function Pedidos() {
             <span className="resumen-value success">{resumen.pedidosEntregados}</span>
           </div>
           <div className="resumen-card">
-            <span className="resumen-label">Monto Entregado</span>
-            <span className="resumen-value">{formatMoney(resumen.montoEntregado)}</span>
+            <span className="resumen-label">Cobrado</span>
+            <span className="resumen-value">{formatMoney(resumen.montoPagado || resumen.montoEntregado)}</span>
           </div>
         </div>
       )}
@@ -203,6 +227,7 @@ function Pedidos() {
           >
             <option value="">Todos</option>
             <option value="pendiente">Pendientes</option>
+            <option value="preparado">Preparados</option>
             <option value="en_camino">En Camino</option>
             <option value="entregado">Entregados</option>
             <option value="cancelado">Cancelados</option>
@@ -261,9 +286,29 @@ function Pedidos() {
                 <div className="pedido-notas">{pedido.notas}</div>
               )}
 
+              {pedido.observaciones && (
+                <div className="pedido-observaciones">
+                  <strong>Obs:</strong> {pedido.observaciones}
+                </div>
+              )}
+
+              {pedido.estado === 'entregado' && parseFloat(pedido.saldoPendiente) > 0 && (
+                <div className="pedido-saldo-pendiente">
+                  Saldo pendiente: {formatMoney(pedido.saldoPendiente)}
+                </div>
+              )}
+
               <div className="pedido-actions">
                 {pedido.estado === 'pendiente' && (
                   <>
+                    {canEdit && (
+                      <button
+                        className="btn btn-preparado btn-sm"
+                        onClick={() => handlePreparar(pedido)}
+                      >
+                        Preparar
+                      </button>
+                    )}
                     <button
                       className="btn btn-info btn-sm"
                       onClick={() => handleDespachar(pedido)}
@@ -294,12 +339,28 @@ function Pedidos() {
                     )}
                   </>
                 )}
+                {pedido.estado === 'preparado' && (
+                  <>
+                    <button
+                      className="btn btn-info btn-sm"
+                      onClick={() => handleDespachar(pedido)}
+                    >
+                      Despachar
+                    </button>
+                    <button
+                      className="btn btn-success btn-sm"
+                      onClick={() => handleEntregar(pedido)}
+                    >
+                      Entregar
+                    </button>
+                  </>
+                )}
                 {pedido.estado === 'en_camino' && (
                   <button
                     className="btn btn-success btn-sm"
                     onClick={() => handleEntregar(pedido)}
                   >
-                    Marcar Entregado
+                    Entregar
                   </button>
                 )}
               </div>
@@ -322,6 +383,14 @@ function Pedidos() {
           onClienteCreated={(nuevoCliente) => {
             setClientes(prev => [...prev, nuevoCliente]);
           }}
+        />
+      )}
+
+      {pedidoEntrega && (
+        <ModalEntrega
+          pedido={pedidoEntrega}
+          onConfirm={handleConfirmarEntrega}
+          onClose={() => setPedidoEntrega(null)}
         />
       )}
     </div>
