@@ -11,9 +11,11 @@ function Sidebar() {
   // Roles - usando tieneAlgunRol para verificar roles múltiples
   const isAdmin = tieneAlgunRol(['admin']);
   const isAdminRepartidor = tieneAlgunRol(['admin', 'administrador_repartidor']);
-  const isRepartidor = tieneAlgunRol(['admin', 'administrador_repartidor', 'repartidor']);
+  const canManagePedidos = tieneAlgunRol(['admin', 'administrador_repartidor', 'repartidor']);
   const isEncargado = tieneAlgunRol(['encargado']);
   const isInvitado = usuario?.rol === 'invitado'; // Invitado es rol exclusivo
+  // Repartidor puro (no tiene rol admin)
+  const isOnlyRepartidor = usuario?.rol === 'repartidor' && !isAdmin;
 
   // Determinar secciones abiertas basado en la ruta actual
   const getInitialOpenSections = () => {
@@ -44,8 +46,8 @@ function Sidebar() {
 
   // Definir estructura del menú por secciones
   const menuSections = [
-    // Captura Diaria - Item individual (no en sección)
-    ...(!isRepartidor && !isInvitado ? [{
+    // Captura Diaria - Item individual (Admin y Encargado)
+    ...((isAdmin || isEncargado) && !isInvitado ? [{
       type: 'item',
       path: '/captura',
       label: 'Captura Diaria',
@@ -82,7 +84,7 @@ function Sidebar() {
           { path: '/repartos-pendientes', label: 'Monitor Repartos', icon: '📺' },
         ] : []),
         // Deudores - Admin, Admin Repartidor, Repartidor
-        ...((isAdmin || isAdminRepartidor || isRepartidor) ? [
+        ...(canManagePedidos ? [
           { path: '/clientes-deudores', label: 'Deudores', icon: '💰' },
         ] : []),
       ]
