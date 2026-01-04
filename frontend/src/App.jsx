@@ -48,7 +48,7 @@ function PrivateRoute({ children, adminOnly = false, allowedRoles = [] }) {
   }
 
   if (adminOnly && usuario.rol !== 'admin') {
-    return <Navigate to="/captura" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(usuario.rol)) {
@@ -76,13 +76,26 @@ function PrivateClienteRoute({ children }) {
   return children;
 }
 
+// Determina la ruta por defecto según el rol del usuario
+function getDefaultRoute(rol) {
+  switch (rol) {
+    case 'admin':
+      return '/dashboard';
+    case 'repartidor':
+    case 'administrador_repartidor':
+      return '/pedidos';
+    default:
+      return '/captura';
+  }
+}
+
 function App() {
   const { usuario } = useAuth();
 
   return (
     <Routes>
       <Route path="/login" element={
-        usuario ? <Navigate to={usuario.rol === 'admin' ? '/dashboard' : '/captura'} replace /> : <Login />
+        usuario ? <Navigate to={getDefaultRoute(usuario.rol)} replace /> : <Login />
       } />
       <Route path="/forgot-password" element={
         usuario ? <Navigate to="/" replace /> : <ForgotPassword />
@@ -96,7 +109,7 @@ function App() {
           <Layout />
         </PrivateRoute>
       }>
-        <Route index element={<Navigate to={usuario?.rol === 'admin' ? '/dashboard' : '/captura'} replace />} />
+        <Route index element={<Navigate to={getDefaultRoute(usuario?.rol)} replace />} />
         <Route path="captura" element={<Captura />} />
         <Route path="auditoria" element={<Auditoria />} />
         <Route path="dashboard" element={
