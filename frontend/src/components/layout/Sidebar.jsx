@@ -18,11 +18,13 @@ function Sidebar() {
   const isOnlyRepartidor = usuario?.rol === 'repartidor' && !isAdmin;
 
   // Determinar secciones abiertas basado en la ruta actual
-  const getInitialOpenSections = () => {
-    const path = location.pathname;
+  const getOpenSections = (path) => {
     const sections = {};
 
-    if (['/dashboard', '/auditoria', '/resumen-semanal', '/resumen-mensual', '/resumen-anual', '/corte-pedidos'].includes(path)) {
+    if (['/captura'].includes(path)) {
+      sections.captura = true;
+    }
+    if (['/dashboard', '/auditoria', '/resumen-semanal', '/resumen-mensual', '/resumen-anual'].includes(path)) {
       sections.dashboards = true;
     }
     if (['/pedidos', '/corte-pedidos', '/repartos-pendientes', '/clientes-deudores'].includes(path)) {
@@ -35,7 +37,13 @@ function Sidebar() {
     return sections;
   };
 
-  const [openSections, setOpenSections] = useState(getInitialOpenSections);
+  const [openSections, setOpenSections] = useState(() => getOpenSections(location.pathname));
+
+  // Actualizar secciones abiertas cuando cambia la ruta
+  React.useEffect(() => {
+    const newSections = getOpenSections(location.pathname);
+    setOpenSections(prev => ({ ...prev, ...newSections }));
+  }, [location.pathname]);
 
   const toggleSection = (section) => {
     setOpenSections(prev => ({
@@ -46,12 +54,15 @@ function Sidebar() {
 
   // Definir estructura del menú por secciones
   const menuSections = [
-    // Captura Diaria - Item individual (Admin y Encargado)
+    // Sección Captura - Admin y Encargado
     ...((isAdmin || isEncargado) && !isInvitado ? [{
-      type: 'item',
-      path: '/captura',
-      label: 'Captura Diaria',
-      icon: '📝'
+      type: 'section',
+      id: 'captura',
+      label: 'Captura',
+      icon: '📝',
+      items: [
+        { path: '/captura', label: 'Captura Diaria', icon: '📝' },
+      ]
     }] : []),
 
     // Sección Dashboards - Solo admin general
@@ -66,7 +77,6 @@ function Sidebar() {
         { path: '/resumen-semanal', label: 'Resumen Semanal', icon: '📈' },
         { path: '/resumen-mensual', label: 'Resumen Mensual', icon: '🗓️' },
         { path: '/resumen-anual', label: 'Resumen Anual', icon: '📆' },
-        { path: '/corte-pedidos', label: 'Cierre de Caja', icon: '💵' },
       ]
     }] : []),
 
