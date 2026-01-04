@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import logo from '../../assets/logo.png';
 import './Sidebar.css';
 
 function Sidebar() {
-  const { usuario } = useAuth();
+  const { usuario, tieneAlgunRol } = useAuth();
   const location = useLocation();
 
-  // Roles
-  const isAdmin = usuario?.rol === 'admin';
-  const isAdminRepartidor = usuario?.rol === 'administrador_repartidor';
-  const isRepartidor = usuario?.rol === 'repartidor';
-  const isEncargado = usuario?.rol === 'encargado';
-  const isInvitado = usuario?.rol === 'invitado';
+  // Roles - usando tieneAlgunRol para verificar roles múltiples
+  const isAdmin = tieneAlgunRol(['admin']);
+  const isAdminRepartidor = tieneAlgunRol(['admin', 'administrador_repartidor']);
+  const isRepartidor = tieneAlgunRol(['admin', 'administrador_repartidor', 'repartidor']);
+  const isEncargado = tieneAlgunRol(['encargado']);
+  const isInvitado = usuario?.rol === 'invitado'; // Invitado es rol exclusivo
 
   // Determinar secciones abiertas basado en la ruta actual
   const getInitialOpenSections = () => {
@@ -124,8 +125,7 @@ function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h1 className="sidebar-logo">Hacienda</h1>
-        <span className="sidebar-subtitle">Sistema de Cortes</span>
+        <img src={logo} alt="La Hacienda Tortillas" className="sidebar-logo-img" />
       </div>
 
       <nav className="sidebar-nav">

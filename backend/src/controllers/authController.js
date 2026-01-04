@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Op } from 'sequelize';
 import { OAuth2Client } from 'google-auth-library';
-import { Usuario, Sucursal } from '../models/index.js';
+import { Usuario, Sucursal, UsuarioRol } from '../models/index.js';
 import config from '../config/index.js';
 import { sendPasswordResetEmail } from '../services/emailService.js';
 
@@ -12,12 +12,22 @@ const googleClient = config.google.clientId ? new OAuth2Client(config.google.cli
 /**
  * Genera token JWT
  */
-const generateToken = (user) => {
+const generateToken = (user, rolesAdicionales = []) => {
+  // Combinar rol principal con roles adicionales activos
+  const todosLosRoles = [user.rol];
+  rolesAdicionales.forEach(ra => {
+    if (ra.activo && !todosLosRoles.includes(ra.rol)) {
+      todosLosRoles.push(ra.rol);
+    }
+  });
+
   return jwt.sign(
     {
       id: user.id,
       email: user.email,
+      nombre: user.nombre,
       rol: user.rol,
+      roles: todosLosRoles,
       sucursalId: user.sucursalId
     },
     config.jwt.secret,
@@ -38,7 +48,15 @@ export const login = async (req, res, next) => {
 
     const usuario = await Usuario.findOne({
       where: { email, activo: true },
-      include: [{ model: Sucursal, as: 'sucursal' }]
+      include: [
+        { model: Sucursal, as: 'sucursal' },
+        {
+          model: UsuarioRol,
+          as: 'rolesAdicionales',
+          where: { activo: true },
+          required: false
+        }
+      ]
     });
 
     if (!usuario) {
@@ -50,11 +68,21 @@ export const login = async (req, res, next) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    const token = generateToken(usuario);
+    const rolesAdicionales = usuario.rolesAdicionales || [];
+    const token = generateToken(usuario, rolesAdicionales);
+
+    // Preparar respuesta con todos los roles
+    const userData = usuario.toJSON();
+    userData.todosLosRoles = [userData.rol];
+    rolesAdicionales.forEach(ra => {
+      if (!userData.todosLosRoles.includes(ra.rol)) {
+        userData.todosLosRoles.push(ra.rol);
+      }
+    });
 
     res.json({
       token,
-      usuario: usuario.toJSON()
+      usuario: userData
     });
   } catch (error) {
     next(error);
@@ -67,14 +95,33 @@ export const login = async (req, res, next) => {
 export const me = async (req, res, next) => {
   try {
     const usuario = await Usuario.findByPk(req.user.id, {
-      include: [{ model: Sucursal, as: 'sucursal' }]
+      include: [
+        { model: Sucursal, as: 'sucursal' },
+        {
+          model: UsuarioRol,
+          as: 'rolesAdicionales',
+          where: { activo: true },
+          required: false
+        }
+      ]
     });
 
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    res.json(usuario);
+    // Preparar respuesta con todos los roles
+    const userData = usuario.toJSON();
+    userData.todosLosRoles = [userData.rol];
+    if (userData.rolesAdicionales) {
+      userData.rolesAdicionales.forEach(ra => {
+        if (!userData.todosLosRoles.includes(ra.rol)) {
+          userData.todosLosRoles.push(ra.rol);
+        }
+      });
+    }
+
+    res.json(userData);
   } catch (error) {
     next(error);
   }

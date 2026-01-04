@@ -71,6 +71,24 @@ router.get('/historial', authenticate, canManagePedidos, cortesPedidosController
 
 /**
  * @swagger
+ * /api/cortes-pedidos/analytics-tiempos:
+ *   get:
+ *     summary: Obtener analytics de tiempos (top 10 rankings y deudores)
+ *     tags: [Cortes Pedidos]
+ *     parameters:
+ *       - in: query
+ *         name: fecha
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Analytics con rankings de tiempos y deudores
+ */
+router.get('/analytics-tiempos', authenticate, isAdminRepartidor, cortesPedidosController.getAnalyticsTiempos);
+
+/**
+ * @swagger
  * /api/cortes-pedidos/finalizar:
  *   post:
  *     summary: Finalizar corte de repartidor
@@ -91,5 +109,89 @@ router.get('/historial', authenticate, canManagePedidos, cortesPedidosController
  *         description: Corte finalizado
  */
 router.post('/finalizar', authenticate, canManagePedidos, cortesPedidosController.finalizarCorte);
+
+/**
+ * @swagger
+ * /api/cortes-pedidos/cierre/{fecha}/{repartidorId}:
+ *   get:
+ *     summary: Obtener detalle para cierre de caja
+ *     tags: [Cortes Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: fecha
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: path
+ *         name: repartidorId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Detalle de cobros para cierre de caja
+ */
+router.get('/cierre/:fecha/:repartidorId', authenticate, canManagePedidos, cortesPedidosController.getDetalleCierre);
+
+/**
+ * @swagger
+ * /api/cortes-pedidos/cierre/{fecha}/{repartidorId}:
+ *   post:
+ *     summary: Confirmar cierre de caja
+ *     tags: [Cortes Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: fecha
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: path
+ *         name: repartidorId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               detalles:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *               notasGenerales:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Cierre confirmado
+ */
+router.post('/cierre/:fecha/:repartidorId', authenticate, isAdminRepartidor, cortesPedidosController.confirmarCierreCaja);
+
+/**
+ * @swagger
+ * /api/cortes-pedidos/ticket/{fecha}/{repartidorId}:
+ *   get:
+ *     summary: Obtener datos para imprimir ticket
+ *     tags: [Cortes Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: fecha
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: path
+ *         name: repartidorId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Datos formateados para ticket
+ */
+router.get('/ticket/:fecha/:repartidorId', authenticate, canManagePedidos, cortesPedidosController.getTicketData);
 
 export default router;

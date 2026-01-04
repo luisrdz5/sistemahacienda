@@ -176,6 +176,20 @@
   border-top: 1px dashed var(--color-gray-200);
 }
 
+/* Acciones del pedido */
+.pedido-acciones {
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--color-gray-200);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-sm {
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-sm);
+}
+
 .empty-deudores {
   text-align: center;
   padding: var(--spacing-6);

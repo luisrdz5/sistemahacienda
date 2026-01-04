@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 import './Clientes.css';
 
 function Clientes() {
   const [clientes, setClientes] = useState([]);
   const [productos, setProductos] = useState([]);
+  const [sucursales, setSucursales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingCliente, setEditingCliente] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [pendientesCount, setPendientesCount] = useState(0);
 
   useEffect(() => {
     cargarDatos();
@@ -16,12 +19,24 @@ function Clientes() {
 
   const cargarDatos = async () => {
     try {
-      const [clientesData, productosData] = await Promise.all([
+      const [clientesData, productosData, sucursalesData] = await Promise.all([
         api.get('/clientes'),
-        api.get('/productos?activo=true')
+        api.get('/productos?activo=true'),
+        api.get('/sucursales')
       ]);
-      setClientes(clientesData);
-      setProductos(productosData);
+      setClientes(clientesData.data || clientesData);
+      setProductos(productosData.data || productosData);
+      setSucursales(sucursalesData.data || sucursalesData);
+
+      // Contar clientes pendientes de aprobacion
+      try {
+        const pendientesData = await api.get('/clientes/pendientes');
+        const pendientes = pendientesData.data || pendientesData;
+        setPendientesCount(Array.isArray(pendientes) ? pendientes.length : 0);
+      } catch (e) {
+        // Si falla el endpoint de pendientes, ignorar
+        setPendientesCount(0);
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -75,9 +90,16 @@ function Clientes() {
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">Clientes</h1>
-        <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-          + Nuevo Cliente
-        </button>
+        <div className="page-header-actions">
+          {pendientesCount > 0 && (
+            <Link to="/clientes-pendientes" className="btn btn-warning">
+              Pendientes ({pendientesCount})
+            </Link>
+          )}
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+            + Nuevo Cliente
+          </button>
+        </div>
       </div>
 
       <div className="clientes-search">
@@ -109,6 +131,7 @@ function Clientes() {
         <ClienteForm
           cliente={editingCliente}
           productos={productos}
+          sucursales={sucursales}
           onSubmit={handleSubmit}
           onClose={() => {
             setShowForm(false);
@@ -125,7 +148,7 @@ function ClienteCard({ cliente, productos, onEdit, onDelete }) {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN'
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   const getPrecioProducto = (productoId) => {
@@ -137,18 +160,28 @@ function ClienteCard({ cliente, productos, onEdit, onDelete }) {
     };
   };
 
+  const creditoUsado = cliente.adeudoTotal ? (cliente.adeudoTotal / cliente.limiteCredito) * 100 : 0;
+
   return (
     <div className={`cliente-card card ${!cliente.activo ? 'cliente-inactivo' : ''}`}>
       <div className="cliente-header">
         <h3>{cliente.nombre}</h3>
-        {!cliente.activo && (
-          <span className="badge badge-error">Inactivo</span>
-        )}
+        <div className="cliente-badges">
+          {!cliente.activo && (
+            <span className="badge badge-error">Inactivo</span>
+          )}
+          {cliente.aprobado === false && (
+            <span className="badge badge-warning">Pendiente</span>
+          )}
+          {cliente.email && (
+            <span className="badge badge-info" title="Cliente con portal">Portal</span>
+          )}
+        </div>
       </div>
 
       {cliente.telefono && (
         <p className="cliente-info">
-          <span className="info-icon">📞</span>
+          <span className="info-icon">&#128222;</span>
           <a href={`https://wa.me/52${cliente.telefono.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
             {cliente.telefono}
           </a>
@@ -157,10 +190,43 @@ function ClienteCard({ cliente, productos, onEdit, onDelete }) {
 
       {cliente.direccion && (
         <p className="cliente-info">
-          <span className="info-icon">📍</span>
+          <span className="info-icon">&#128205;</span>
           {cliente.direccion}
         </p>
       )}
+
+      {cliente.sucursal && (
+        <p className="cliente-info">
+          <span className="info-icon">&#127970;</span>
+          {cliente.sucursal.nombre}
+          {cliente.sucursalBackup && ` / ${cliente.sucursalBackup.nombre}`}
+        </p>
+      )}
+
+      {/* Seccion de credito */}
+      <div className="cliente-credito">
+        <div className="credito-header">
+          <span>Credito</span>
+          <span className="credito-limite">{formatMoney(cliente.limiteCredito)}</span>
+        </div>
+        <div className="credito-bar">
+          <div
+            className="credito-bar-fill"
+            style={{
+              width: `${Math.min(100, creditoUsado)}%`,
+              background: creditoUsado > 80 ? '#ef4444' : creditoUsado > 50 ? '#f59e0b' : '#10b981'
+            }}
+          ></div>
+        </div>
+        <div className="credito-stats">
+          <span className={cliente.adeudoTotal > 0 ? 'adeudo' : ''}>
+            Adeudo: {formatMoney(cliente.adeudoTotal || 0)}
+          </span>
+          <span className="disponible">
+            Disp: {formatMoney((cliente.limiteCredito || 0) - (cliente.adeudoTotal || 0))}
+          </span>
+        </div>
+      </div>
 
       <div className="cliente-precios">
         <h4>Precios</h4>
@@ -197,12 +263,15 @@ function ClienteCard({ cliente, productos, onEdit, onDelete }) {
   );
 }
 
-function ClienteForm({ cliente, productos, onSubmit, onClose }) {
+function ClienteForm({ cliente, productos, sucursales, onSubmit, onClose }) {
   const [nombre, setNombre] = useState(cliente?.nombre || '');
   const [telefono, setTelefono] = useState(cliente?.telefono || '');
   const [direccion, setDireccion] = useState(cliente?.direccion || '');
   const [notas, setNotas] = useState(cliente?.notas || '');
   const [activo, setActivo] = useState(cliente?.activo ?? true);
+  const [limiteCredito, setLimiteCredito] = useState(cliente?.limiteCredito || 200);
+  const [sucursalId, setSucursalId] = useState(cliente?.sucursalId || '');
+  const [sucursalBackupId, setSucursalBackupId] = useState(cliente?.sucursalBackupId || '');
   const [precios, setPrecios] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -245,6 +314,9 @@ function ClienteForm({ cliente, productos, onSubmit, onClose }) {
       direccion: direccion || null,
       notas: notas || null,
       activo,
+      limiteCredito: parseFloat(limiteCredito) || 200,
+      sucursalId: sucursalId ? parseInt(sucursalId) : null,
+      sucursalBackupId: sucursalBackupId ? parseInt(sucursalBackupId) : null,
       precios: preciosArray
     });
     setLoading(false);
@@ -304,6 +376,50 @@ function ClienteForm({ cliente, productos, onSubmit, onClose }) {
               placeholder="Notas adicionales..."
               rows={2}
             />
+          </div>
+
+          <div className="form-section">
+            <h4>Credito y Sucursal</h4>
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Limite de Credito</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={limiteCredito}
+                  onChange={(e) => setLimiteCredito(e.target.value)}
+                  placeholder="200.00"
+                  min="0"
+                  step="50"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Sucursal Principal</label>
+                <select
+                  className="form-input"
+                  value={sucursalId}
+                  onChange={(e) => setSucursalId(e.target.value)}
+                >
+                  <option value="">Sin asignar</option>
+                  {sucursales.map(s => (
+                    <option key={s.id} value={s.id}>{s.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Sucursal Backup</label>
+                <select
+                  className="form-input"
+                  value={sucursalBackupId}
+                  onChange={(e) => setSucursalBackupId(e.target.value)}
+                >
+                  <option value="">Sin backup</option>
+                  {sucursales.filter(s => s.id !== parseInt(sucursalId)).map(s => (
+                    <option key={s.id} value={s.id}>{s.nombre}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="form-section">

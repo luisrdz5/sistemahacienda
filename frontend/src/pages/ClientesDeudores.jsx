@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
+import ModalAbono from '../components/pedidos/ModalAbono';
 import './ClientesDeudores.css';
 
 function ClientesDeudores() {
@@ -11,10 +12,12 @@ function ClientesDeudores() {
   const [repartidorId, setRepartidorId] = useState('');
   const [repartidores, setRepartidores] = useState([]);
   const [expandido, setExpandido] = useState({});
+  const [modalAbono, setModalAbono] = useState(null);
 
   const isAdmin = usuario?.rol === 'admin';
   const isAdminRepartidor = usuario?.rol === 'administrador_repartidor';
   const canFilterRepartidor = isAdmin || isAdminRepartidor;
+  const canRegistrarAbono = isAdmin || isAdminRepartidor;
 
   useEffect(() => {
     if (canFilterRepartidor) {
@@ -65,6 +68,22 @@ function ClientesDeudores() {
       ...prev,
       [clienteId]: !prev[clienteId]
     }));
+  };
+
+  const handleAbrirAbono = (pedido, e) => {
+    e.stopPropagation();
+    setModalAbono(pedido);
+  };
+
+  const handleConfirmarAbono = async (datos) => {
+    try {
+      await api.post(`/pedidos/${modalAbono.id}/abonos`, datos);
+      setModalAbono(null);
+      cargarDatos(); // Recargar para actualizar montos
+    } catch (error) {
+      console.error('Error al registrar abono:', error);
+      alert(error.message || 'Error al registrar el abono');
+    }
   };
 
   if (loading) {
@@ -170,6 +189,16 @@ function ClientesDeudores() {
                           {pedido.observaciones && (
                             <div className="pedido-obs">{pedido.observaciones}</div>
                           )}
+                          {canRegistrarAbono && pedido.saldoPendiente > 0 && (
+                            <div className="pedido-acciones">
+                              <button
+                                className="btn btn-sm btn-primary"
+                                onClick={(e) => handleAbrirAbono(pedido, e)}
+                              >
+                                Registrar Abono
+                              </button>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -179,6 +208,14 @@ function ClientesDeudores() {
             )}
           </div>
         </>
+      )}
+
+      {modalAbono && (
+        <ModalAbono
+          pedido={modalAbono}
+          onConfirm={handleConfirmarAbono}
+          onClose={() => setModalAbono(null)}
+        />
       )}
     </div>
   );

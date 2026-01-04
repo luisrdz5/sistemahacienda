@@ -1,5 +1,10 @@
 import { Op } from 'sequelize';
-import { Pedido, DetallePedido, Cliente, Producto, Usuario, PrecioCliente, Abono, sequelize } from '../models/index.js';
+import { Pedido, DetallePedido, Cliente, Producto, Usuario, PrecioCliente, Abono, Sucursal, HistorialPedido, sequelize } from '../models/index.js';
+
+// Helper para obtener IP del request
+const getClientIP = (req) => {
+  return req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || null;
+};
 
 /**
  * Obtener precio de producto para cliente (personalizado o lista)
@@ -25,7 +30,7 @@ const obtenerPrecioProducto = async (clienteId, productoId) => {
  */
 export const getAll = async (req, res, next) => {
   try {
-    const { fecha, repartidorId, estado, clienteId } = req.query;
+    const { fecha, repartidorId, estado, clienteId, sucursalId } = req.query;
     const where = {};
 
     if (fecha) {
@@ -44,6 +49,10 @@ export const getAll = async (req, res, next) => {
       where.clienteId = clienteId;
     }
 
+    if (sucursalId) {
+      where.sucursalId = sucursalId;
+    }
+
     // Repartidores solo ven sus propios pedidos
     if (req.user.rol === 'repartidor') {
       where.repartidorId = req.user.id;
@@ -55,6 +64,8 @@ export const getAll = async (req, res, next) => {
         { model: Cliente, as: 'cliente' },
         { model: Usuario, as: 'repartidor', attributes: ['id', 'nombre'] },
         { model: Usuario, as: 'creadoPor', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursal', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursalActual', attributes: ['id', 'nombre'] },
         {
           model: DetallePedido,
           as: 'detalles',
@@ -80,6 +91,8 @@ export const getById = async (req, res, next) => {
         { model: Cliente, as: 'cliente' },
         { model: Usuario, as: 'repartidor', attributes: ['id', 'nombre'] },
         { model: Usuario, as: 'creadoPor', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursal', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursalActual', attributes: ['id', 'nombre'] },
         {
           model: DetallePedido,
           as: 'detalles',
@@ -105,11 +118,23 @@ export const create = async (req, res, next) => {
   const t = await sequelize.transaction();
 
   try {
-    const { fecha, clienteId, repartidorId, notas, detalles } = req.body;
+    const { fecha, clienteId, repartidorId, notas, detalles, sucursalId } = req.body;
 
     if (!fecha || !detalles || detalles.length === 0) {
       await t.rollback();
       return res.status(400).json({ error: 'Fecha y al menos un producto son requeridos' });
+    }
+
+    // Obtener sucursales del cliente si existe
+    let sucursalPrincipal = sucursalId || null;
+    let sucursalBackup = null;
+
+    if (clienteId) {
+      const cliente = await Cliente.findByPk(clienteId);
+      if (cliente) {
+        sucursalPrincipal = sucursalId || cliente.sucursalId;
+        sucursalBackup = cliente.sucursalBackupId;
+      }
     }
 
     // Crear pedido
@@ -119,7 +144,10 @@ export const create = async (req, res, next) => {
       repartidorId: repartidorId || null,
       creadoPorId: req.user.id,
       notas: notas || null,
-      total: 0
+      total: 0,
+      sucursalId: sucursalPrincipal,
+      sucursalBackupId: sucursalBackup,
+      sucursalActualId: sucursalPrincipal // Por defecto la principal
     }, { transaction: t });
 
     let total = 0;
@@ -147,6 +175,13 @@ export const create = async (req, res, next) => {
     // Actualizar total y saldo pendiente
     await pedido.update({ total, saldoPendiente: total }, { transaction: t });
 
+    // Registrar en historial
+    await HistorialPedido.registrar(pedido.id, req.user.id, 'creado',
+      `Pedido creado por ${req.user.nombre || req.user.email}`, {
+        datosNuevos: { clienteId, repartidorId, total, detalles: detalles.length },
+        ipAddress: getClientIP(req)
+      });
+
     await t.commit();
 
     // Recargar con relaciones
@@ -155,6 +190,8 @@ export const create = async (req, res, next) => {
         { model: Cliente, as: 'cliente' },
         { model: Usuario, as: 'repartidor', attributes: ['id', 'nombre'] },
         { model: Usuario, as: 'creadoPor', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursal', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursalActual', attributes: ['id', 'nombre'] },
         {
           model: DetallePedido,
           as: 'detalles',
@@ -190,6 +227,17 @@ export const update = async (req, res, next) => {
     }
 
     const { clienteId, repartidorId, notas, detalles } = req.body;
+
+    // Guardar datos anteriores para historial
+    const datosAnteriores = {
+      clienteId: pedido.clienteId,
+      repartidorId: pedido.repartidorId,
+      notas: pedido.notas,
+      total: pedido.total
+    };
+
+    // Detectar si cambió el repartidor
+    const cambioRepartidor = repartidorId !== undefined && repartidorId !== pedido.repartidorId;
 
     // Actualizar datos básicos
     await pedido.update({
@@ -230,6 +278,24 @@ export const update = async (req, res, next) => {
       await pedido.update({ total, saldoPendiente }, { transaction: t });
     }
 
+    // Registrar cambios en historial
+    if (cambioRepartidor) {
+      await HistorialPedido.registrar(pedido.id, req.user.id,
+        datosAnteriores.repartidorId ? 'repartidor_cambiado' : 'repartidor_asignado',
+        `Repartidor ${datosAnteriores.repartidorId ? 'cambiado' : 'asignado'} por ${req.user.nombre || req.user.email}`, {
+          datosAnteriores: { repartidorId: datosAnteriores.repartidorId },
+          datosNuevos: { repartidorId },
+          ipAddress: getClientIP(req)
+        });
+    } else {
+      await HistorialPedido.registrar(pedido.id, req.user.id, 'editado',
+        `Pedido editado por ${req.user.nombre || req.user.email}`, {
+          datosAnteriores,
+          datosNuevos: { clienteId, repartidorId, notas },
+          ipAddress: getClientIP(req)
+        });
+    }
+
     await t.commit();
 
     // Recargar
@@ -238,6 +304,8 @@ export const update = async (req, res, next) => {
         { model: Cliente, as: 'cliente' },
         { model: Usuario, as: 'repartidor', attributes: ['id', 'nombre'] },
         { model: Usuario, as: 'creadoPor', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursal', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursalActual', attributes: ['id', 'nombre'] },
         {
           model: DetallePedido,
           as: 'detalles',
@@ -273,6 +341,14 @@ export const preparar = async (req, res, next) => {
       fechaPreparado: new Date()
     });
 
+    // Registrar en historial
+    await HistorialPedido.registrar(pedido.id, req.user.id, 'estado_preparado',
+      `Marcado como preparado por ${req.user.nombre || req.user.email}`, {
+        datosAnteriores: { estado: 'pendiente' },
+        datosNuevos: { estado: 'preparado' },
+        ipAddress: getClientIP(req)
+      });
+
     res.json({ message: 'Pedido marcado como preparado', pedido });
   } catch (error) {
     next(error);
@@ -294,9 +370,33 @@ export const despachar = async (req, res, next) => {
       return res.status(400).json({ error: 'Solo se pueden despachar pedidos pendientes o preparados' });
     }
 
-    await pedido.update({ estado: 'en_camino' });
+    const ahora = new Date();
+    const demoraPreparacionSeg = Math.floor((ahora - new Date(pedido.createdAt)) / 1000);
 
-    res.json({ message: 'Pedido marcado como en camino', pedido });
+    const estadoAnterior = pedido.estado;
+
+    await pedido.update({
+      estado: 'en_camino',
+      fechaDespacho: ahora,
+      demoraPreparacionSeg
+    });
+
+    // Registrar en historial
+    await HistorialPedido.registrar(pedido.id, req.user.id, 'estado_en_camino',
+      `Despachado por ${req.user.nombre || req.user.email} (${Math.round(demoraPreparacionSeg / 60)} min preparación)`, {
+        datosAnteriores: { estado: estadoAnterior },
+        datosNuevos: { estado: 'en_camino', demoraPreparacionSeg },
+        ipAddress: getClientIP(req)
+      });
+
+    res.json({
+      message: 'Pedido marcado como en camino',
+      pedido,
+      tiempoPreparacion: {
+        segundos: demoraPreparacionSeg,
+        minutos: Math.round(demoraPreparacionSeg / 60)
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -324,6 +424,9 @@ export const entregar = async (req, res, next) => {
       });
     }
 
+    // Guardar estado anterior para historial
+    const estadoAnterior = pedido.estado;
+
     // Validar observacion obligatoria si no hay pago
     const montoAbono = parseFloat(montoPagado) || 0;
     if (montoAbono === 0 && !observaciones) {
@@ -348,14 +451,43 @@ export const entregar = async (req, res, next) => {
       }, { transaction: t });
     }
 
+    // Calcular tiempos de entrega
+    const ahora = new Date();
+    let demoraEntregaSeg = null;
+    let demoraTotalSeg = null;
+
+    if (pedido.fechaDespacho) {
+      demoraEntregaSeg = Math.floor((ahora - new Date(pedido.fechaDespacho)) / 1000);
+    }
+    demoraTotalSeg = Math.floor((ahora - new Date(pedido.createdAt)) / 1000);
+
     // Actualizar pedido
     await pedido.update({
       estado: 'entregado',
       montoPagado: nuevoMontoPagado,
       saldoPendiente: nuevoSaldoPendiente,
       observaciones: observaciones || pedido.observaciones,
-      fechaEntrega: new Date()
+      fechaEntrega: ahora,
+      demoraEntregaSeg,
+      demoraTotalSeg
     }, { transaction: t });
+
+    // Registrar entrega en historial
+    await HistorialPedido.registrar(pedido.id, req.user.id, 'estado_entregado',
+      `Entregado por ${req.user.nombre || req.user.email}${demoraEntregaSeg ? ` (${Math.round(demoraEntregaSeg / 60)} min entrega)` : ''}`, {
+        datosAnteriores: { estado: estadoAnterior },
+        datosNuevos: { estado: 'entregado', demoraEntregaSeg, demoraTotalSeg },
+        ipAddress: getClientIP(req)
+      });
+
+    // Registrar pago en historial si aplica
+    if (montoAbono > 0) {
+      await HistorialPedido.registrar(pedido.id, req.user.id, 'pago_registrado',
+        `Pago de $${montoAbono.toFixed(2)} (${tipoPago || 'efectivo'}) registrado por ${req.user.nombre || req.user.email}`, {
+          datosNuevos: { monto: montoAbono, tipo: tipoPago || 'efectivo', saldoPendiente: nuevoSaldoPendiente },
+          ipAddress: getClientIP(req)
+        });
+    }
 
     await t.commit();
 
@@ -395,6 +527,14 @@ export const cancelar = async (req, res, next) => {
     }
 
     await pedido.update({ estado: 'cancelado' });
+
+    // Registrar en historial
+    await HistorialPedido.registrar(pedido.id, req.user.id, 'estado_cancelado',
+      `Cancelado por ${req.user.nombre || req.user.email}`, {
+        datosAnteriores: { estado: 'pendiente' },
+        datosNuevos: { estado: 'cancelado' },
+        ipAddress: getClientIP(req)
+      });
 
     res.json({ message: 'Pedido cancelado', pedido });
   } catch (error) {
@@ -548,6 +688,13 @@ export const registrarAbono = async (req, res, next) => {
       saldoPendiente: nuevoSaldoPendiente
     }, { transaction: t });
 
+    // Registrar en historial
+    await HistorialPedido.registrar(pedido.id, req.user.id, 'abono_registrado',
+      `Abono de $${montoAbono.toFixed(2)} (${tipo || 'efectivo'}) registrado por ${req.user.nombre || req.user.email}`, {
+        datosNuevos: { monto: montoAbono, tipo: tipo || 'efectivo', saldoPendiente: nuevoSaldoPendiente },
+        ipAddress: getClientIP(req)
+      });
+
     await t.commit();
 
     res.json({
@@ -619,6 +766,83 @@ export const getRepartosPendientes = async (req, res, next) => {
     };
 
     res.json({ stats, pedidos });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Marcar sucursal ocupada y ofrecer a backup
+ */
+export const marcarSucursalOcupada = async (req, res, next) => {
+  try {
+    const pedido = await Pedido.findByPk(req.params.id);
+
+    if (!pedido) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    if (pedido.estado !== 'pendiente') {
+      return res.status(400).json({ error: 'Solo se pueden transferir pedidos pendientes' });
+    }
+
+    if (!pedido.sucursalBackupId) {
+      return res.status(400).json({ error: 'El pedido no tiene sucursal de backup configurada' });
+    }
+
+    await pedido.update({
+      sucursalOcupada: true
+    });
+
+    res.json({
+      message: 'Pedido marcado como disponible para sucursal backup',
+      pedido,
+      sucursalBackupId: pedido.sucursalBackupId
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Tomar pedido (sucursal backup toma el pedido)
+ */
+export const tomarPedido = async (req, res, next) => {
+  try {
+    const { sucursalId } = req.body;
+    const pedido = await Pedido.findByPk(req.params.id);
+
+    if (!pedido) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    if (pedido.estado !== 'pendiente') {
+      return res.status(400).json({ error: 'Solo se pueden tomar pedidos pendientes' });
+    }
+
+    // Verificar que la sucursal pueda tomar el pedido
+    const esSucursalPrincipal = pedido.sucursalId === sucursalId;
+    const esSucursalBackup = pedido.sucursalBackupId === sucursalId && pedido.sucursalOcupada;
+
+    if (!esSucursalPrincipal && !esSucursalBackup) {
+      return res.status(403).json({
+        error: 'Esta sucursal no puede tomar este pedido'
+      });
+    }
+
+    const transferido = esSucursalBackup;
+
+    await pedido.update({
+      sucursalActualId: sucursalId,
+      transferido,
+      fechaAsignacion: new Date()
+    });
+
+    res.json({
+      message: transferido ? 'Pedido tomado por sucursal backup' : 'Pedido asignado',
+      pedido,
+      transferido
+    });
   } catch (error) {
     next(error);
   }
@@ -746,6 +970,45 @@ export const getClientesDeudores = async (req, res, next) => {
     };
 
     res.json({ stats, clientes });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Obtener historial de acciones de un pedido
+ */
+export const getHistorial = async (req, res, next) => {
+  try {
+    const historial = await HistorialPedido.findAll({
+      where: { pedidoId: req.params.id },
+      include: [
+        { model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'rol'] }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Formatear para mostrar de forma legible
+    const historialFormateado = historial.map(h => ({
+      id: h.id,
+      accion: h.accion,
+      accionLabel: HistorialPedido.getAccionLabel(h.accion),
+      descripcion: h.descripcion,
+      usuario: h.usuario?.nombre || 'Sistema',
+      usuarioRol: h.usuario?.rol || null,
+      datosAnteriores: h.datosAnteriores,
+      datosNuevos: h.datosNuevos,
+      fecha: h.createdAt,
+      fechaFormateada: new Date(h.createdAt).toLocaleString('es-MX', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }));
+
+    res.json(historialFormateado);
   } catch (error) {
     next(error);
   }

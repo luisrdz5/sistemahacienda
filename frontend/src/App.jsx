@@ -23,6 +23,15 @@ import CortePedidos from './pages/CortePedidos';
 import Insumos from './pages/Insumos';
 import RepartosPendientes from './pages/RepartosPendientes';
 import ClientesDeudores from './pages/ClientesDeudores';
+import ClientesPendientes from './pages/ClientesPendientes';
+
+// Portal de Clientes
+import LoginCliente from './pages/LoginCliente';
+import RegisterCliente from './pages/RegisterCliente';
+import DashboardCliente from './pages/cliente/DashboardCliente';
+import CatalogoCliente from './pages/cliente/CatalogoCliente';
+import HistorialCliente from './pages/cliente/HistorialCliente';
+import PerfilCliente from './pages/cliente/PerfilCliente';
 
 // Layout
 import Layout from './components/layout/Layout';
@@ -43,6 +52,24 @@ function PrivateRoute({ children, adminOnly = false, allowedRoles = [] }) {
   }
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(usuario.rol)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+function PrivateClienteRoute({ children }) {
+  const { usuario, loading } = useAuth();
+
+  if (loading) {
+    return <div className="loading">Cargando...</div>;
+  }
+
+  if (!usuario) {
+    return <Navigate to="/login-cliente" replace />;
+  }
+
+  if (usuario.rol !== 'cliente') {
     return <Navigate to="/" replace />;
   }
 
@@ -147,7 +174,42 @@ function App() {
             <ClientesDeudores />
           </PrivateRoute>
         } />
+        <Route path="clientes-pendientes" element={
+          <PrivateRoute allowedRoles={['admin', 'administrador_repartidor']}>
+            <ClientesPendientes />
+          </PrivateRoute>
+        } />
       </Route>
+
+      {/* Portal de Clientes - Rutas públicas */}
+      <Route path="/login-cliente" element={
+        usuario?.rol === 'cliente' ? <Navigate to="/cliente/dashboard" replace /> : <LoginCliente />
+      } />
+      <Route path="/register-cliente" element={
+        usuario?.rol === 'cliente' ? <Navigate to="/cliente/dashboard" replace /> : <RegisterCliente />
+      } />
+
+      {/* Portal de Clientes - Rutas protegidas */}
+      <Route path="/cliente/dashboard" element={
+        <PrivateClienteRoute>
+          <DashboardCliente />
+        </PrivateClienteRoute>
+      } />
+      <Route path="/cliente/catalogo" element={
+        <PrivateClienteRoute>
+          <CatalogoCliente />
+        </PrivateClienteRoute>
+      } />
+      <Route path="/cliente/historial" element={
+        <PrivateClienteRoute>
+          <HistorialCliente />
+        </PrivateClienteRoute>
+      } />
+      <Route path="/cliente/perfil" element={
+        <PrivateClienteRoute>
+          <PerfilCliente />
+        </PrivateClienteRoute>
+      } />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

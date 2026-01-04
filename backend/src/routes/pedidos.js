@@ -257,6 +257,71 @@ router.put('/:id/cancelar', authenticate, isAdminRepartidor, pedidosController.c
 
 /**
  * @swagger
+ * /api/pedidos/{id}/sucursal-ocupada:
+ *   put:
+ *     summary: Marcar sucursal ocupada y ofrecer a backup
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pedido disponible para sucursal backup
+ */
+router.put('/:id/sucursal-ocupada', authenticate, canEditPedidos, pedidosController.marcarSucursalOcupada);
+
+/**
+ * @swagger
+ * /api/pedidos/{id}/tomar:
+ *   put:
+ *     summary: Tomar pedido (sucursal asume el pedido)
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - sucursalId
+ *             properties:
+ *               sucursalId:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Pedido tomado
+ */
+router.put('/:id/tomar', authenticate, canEditPedidos, pedidosController.tomarPedido);
+
+/**
+ * @swagger
+ * /api/pedidos/{id}/historial:
+ *   get:
+ *     summary: Obtener historial de acciones de un pedido
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de acciones del pedido
+ */
+router.get('/:id/historial', authenticate, canManagePedidos, pedidosController.getHistorial);
+
+/**
+ * @swagger
  * /api/pedidos/{id}/abonos:
  *   get:
  *     summary: Obtener historial de abonos de un pedido

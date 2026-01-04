@@ -21,6 +21,11 @@ const Producto = sequelize.define('Producto', {
     allowNull: false,
     field: 'precio_lista'
   },
+  imagenUrl: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    field: 'imagen_url'
+  },
   activo: {
     type: DataTypes.BOOLEAN,
     defaultValue: true

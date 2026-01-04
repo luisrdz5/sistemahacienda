@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as productosController from '../controllers/productosController.js';
 import { authenticate, isAdmin, isAdminRepartidor } from '../middlewares/auth.js';
+import { uploadProductoImagen, handleUpload } from '../middlewares/upload.js';
 
 const router = Router();
 
@@ -68,7 +69,7 @@ router.get('/:id', authenticate, productosController.getById);
  *       201:
  *         description: Producto creado
  */
-router.post('/', authenticate, isAdminRepartidor, productosController.create);
+router.post('/', authenticate, isAdminRepartidor, handleUpload(uploadProductoImagen), productosController.create);
 
 /**
  * @swagger
@@ -102,7 +103,25 @@ router.post('/', authenticate, isAdminRepartidor, productosController.create);
  *       404:
  *         description: Producto no encontrado
  */
-router.put('/:id', authenticate, isAdminRepartidor, productosController.update);
+router.put('/:id', authenticate, isAdminRepartidor, handleUpload(uploadProductoImagen), productosController.update);
+
+/**
+ * @swagger
+ * /api/productos/{id}/imagen:
+ *   delete:
+ *     summary: Eliminar imagen de producto
+ *     tags: [Productos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Imagen eliminada
+ */
+router.delete('/:id/imagen', authenticate, isAdminRepartidor, productosController.deleteImagen);
 
 /**
  * @swagger

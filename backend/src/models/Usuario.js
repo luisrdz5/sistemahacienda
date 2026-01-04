@@ -34,13 +34,18 @@ const Usuario = sequelize.define('Usuario', {
     allowNull: true
   },
   rol: {
-    type: DataTypes.ENUM('admin', 'encargado', 'repartidor', 'administrador_repartidor', 'invitado'),
+    type: DataTypes.ENUM('admin', 'encargado', 'repartidor', 'administrador_repartidor', 'invitado', 'cliente'),
     allowNull: false,
     defaultValue: 'encargado'
   },
   sucursalId: {
     type: DataTypes.INTEGER,
     allowNull: true // Nullable para admin
+  },
+  clienteId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'cliente_id'
   },
   activo: {
     type: DataTypes.BOOLEAN,

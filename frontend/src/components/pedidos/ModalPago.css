@@ -1,0 +1,201 @@
+.modal-pago {
+  max-width: 500px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-pago .modal-content {
+  padding: var(--spacing-4);
+}
+
+.loading-text {
+  text-align: center;
+  color: var(--color-gray-500);
+  padding: var(--spacing-4);
+}
+
+/* Resumen del cliente */
+.resumen-cliente {
+  background: var(--color-gray-50);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.resumen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-3);
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.resumen-header h4 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-900);
+}
+
+.resumen-adeudo {
+  text-align: right;
+}
+
+.resumen-adeudo .label {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+.resumen-adeudo .valor {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-danger);
+}
+
+/* Lista de pedidos pendientes */
+.pedidos-pendientes {
+  margin-top: var(--spacing-3);
+  border-top: 1px solid var(--color-gray-200);
+  padding-top: var(--spacing-3);
+}
+
+.pedidos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.pedidos-header span {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+.pedidos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.pedido-item {
+  background: var(--color-white);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-2) var(--spacing-3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pedido-item:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.pedido-item.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.pedido-fecha {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-1);
+}
+
+.pedido-montos {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+}
+
+.pedido-montos .total {
+  color: var(--color-gray-500);
+}
+
+.pedido-montos .pendiente {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/* Formulario de pago */
+.pago-form {
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-3);
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pago-destino {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  background: var(--color-gray-100);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius);
+  margin: var(--spacing-3) 0;
+}
+
+/* Resultado del pago */
+.resultado-pago {
+  background: var(--color-success-light);
+  border: 1px solid var(--color-success);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+  margin: var(--spacing-3) 0;
+}
+
+.resultado-success {
+  color: var(--color-success);
+  font-weight: 600;
+  margin-bottom: var(--spacing-2);
+}
+
+.resultado-detalles {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+.resultado-detalles p {
+  margin: var(--spacing-1) 0;
+}
+
+/* Error */
+.error-message {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius);
+  margin: var(--spacing-3) 0;
+  font-size: var(--font-size-sm);
+}
+
+/* Modal actions */
+.modal-pago .modal-actions {
+  margin-top: var(--spacing-4);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+}
+
+/* Btn styles */
+.btn-sm {
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--font-size-xs);
+}

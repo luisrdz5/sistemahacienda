@@ -2,13 +2,16 @@
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-4);
+  gap: var(--spacing-3);
   margin-bottom: var(--spacing-6);
+  max-width: 100%;
+  overflow: hidden;
 }
 
 @media (min-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-4);
   }
 
   .stats-grid.stats-grid-6 {
@@ -25,22 +28,26 @@
 .stat-card {
   background: var(--color-white);
   border-radius: var(--border-radius-lg);
-  padding: var(--spacing-4);
+  padding: var(--spacing-3);
   box-shadow: var(--shadow);
+  min-width: 0;
 }
 
 .stat-label {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--color-gray-500);
   margin-bottom: var(--spacing-1);
+  line-height: 1.2;
 }
 
 .stat-value {
   display: block;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-base);
   font-weight: 700;
   color: var(--color-gray-900);
+  word-break: break-word;
+  line-height: 1.2;
 }
 
 .stat-value.stat-success {
@@ -460,6 +467,28 @@
   background-color: var(--color-gray-300);
 }
 
+/* Responsive: aumentar tamaños en pantallas medianas */
+@media (min-width: 768px) {
+  .stat-card {
+    padding: var(--spacing-4);
+  }
+
+  .stat-label {
+    font-size: var(--font-size-sm);
+  }
+
+  .stat-value {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* Responsive: aumentar tamaños en pantallas grandes */
+@media (min-width: 1024px) {
+  .stat-value {
+    font-size: var(--font-size-xl);
+  }
+}
+
 /* Responsive para móviles */
 @media (max-width: 640px) {
   .auditoria-nav {
@@ -482,10 +511,41 @@
 
   .stats-grid {
     grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-2);
+  }
+
+  .stats-grid.stats-grid-6 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .stat-card {
+    padding: var(--spacing-2);
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
 
   .stat-value {
-    font-size: var(--font-size-lg);
+    font-size: 12px;
+  }
+}
+
+/* Pantallas muy pequeñas - 2 columnas */
+@media (max-width: 400px) {
+  .stats-grid.stats-grid-6 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-label {
+    font-size: 8px;
+  }
+
+  .stat-value {
+    font-size: 11px;
   }
 }
 

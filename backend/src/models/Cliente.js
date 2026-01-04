@@ -23,6 +23,35 @@ const Cliente = sequelize.define('Cliente', {
     type: DataTypes.TEXT,
     allowNull: true
   },
+  limiteCredito: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 200.00,
+    field: 'limite_credito'
+  },
+  email: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    unique: true,
+    validate: {
+      isEmail: true
+    }
+  },
+  aprobado: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  sucursalId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'sucursal_id'
+  },
+  sucursalBackupId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'sucursal_backup_id'
+  },
   activo: {
     type: DataTypes.BOOLEAN,
     defaultValue: true

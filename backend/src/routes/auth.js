@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as authController from '../controllers/authController.js';
-import { authenticate } from '../middlewares/auth.js';
+import * as clienteAuthController from '../controllers/clienteAuthController.js';
+import { authenticate, isAdmin } from '../middlewares/auth.js';
 
 const router = Router();
 
@@ -140,5 +141,74 @@ router.post('/reset-password', authController.resetPassword);
  *         description: Token inválido
  */
 router.post('/google', authController.googleLogin);
+
+/**
+ * @swagger
+ * /api/auth/register-cliente:
+ *   post:
+ *     summary: Registro de nuevo cliente
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - email
+ *               - password
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               telefono:
+ *                 type: string
+ *               direccion:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       201:
+ *         description: Registro exitoso, pendiente de aprobación
+ *       400:
+ *         description: Datos inválidos o email duplicado
+ */
+router.post('/register-cliente', clienteAuthController.registerCliente);
+
+/**
+ * @swagger
+ * /api/auth/login-cliente:
+ *   post:
+ *     summary: Login específico para clientes
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login exitoso
+ *       401:
+ *         description: Credenciales inválidas
+ *       403:
+ *         description: Cliente pendiente de aprobación
+ */
+router.post('/login-cliente', clienteAuthController.loginCliente);
 
 export default router;

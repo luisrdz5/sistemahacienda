@@ -86,4 +86,77 @@ router.post('/', authenticate, isAdmin, usuariosController.create);
  */
 router.put('/:id', authenticate, isAdmin, usuariosController.update);
 
+/**
+ * @swagger
+ * /api/usuarios/{id}/roles:
+ *   get:
+ *     summary: Obtener roles de un usuario
+ *     tags: [Usuarios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de roles del usuario
+ */
+router.get('/:id/roles', authenticate, isAdmin, usuariosController.getRoles);
+
+/**
+ * @swagger
+ * /api/usuarios/{id}/roles:
+ *   post:
+ *     summary: Agregar rol adicional a usuario
+ *     tags: [Usuarios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rol
+ *             properties:
+ *               rol:
+ *                 type: string
+ *                 enum: [admin, encargado, repartidor, administrador_repartidor]
+ *               sucursalId:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Rol agregado
+ */
+router.post('/:id/roles', authenticate, isAdmin, usuariosController.agregarRol);
+
+/**
+ * @swagger
+ * /api/usuarios/{id}/roles/{rolId}:
+ *   delete:
+ *     summary: Eliminar rol adicional de usuario
+ *     tags: [Usuarios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: rolId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Rol eliminado
+ */
+router.delete('/:id/roles/:rolId', authenticate, isAdmin, usuariosController.quitarRol);
+
 export default router;

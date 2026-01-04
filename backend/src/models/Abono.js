@@ -9,8 +9,13 @@ const Abono = sequelize.define('Abono', {
   },
   pedidoId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true, // Opcional: puede ser pago a nivel cliente
     field: 'pedido_id'
+  },
+  clienteId: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // Para pagos a nivel cliente
+    field: 'cliente_id'
   },
   monto: {
     type: DataTypes.DECIMAL(10, 2),

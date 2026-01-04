@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import swaggerUi from 'swagger-ui-express';
 
 import config from './config/index.js';
@@ -8,15 +10,21 @@ import sequelize from './config/database.js';
 import routes from './routes/index.js';
 import errorHandler from './middlewares/errorHandler.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://lahacienda.online'],
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Servir archivos estáticos (imágenes de productos)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Swagger docs
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

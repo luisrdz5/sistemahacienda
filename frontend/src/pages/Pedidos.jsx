@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import ModalEntrega from '../components/pedidos/ModalEntrega';
+import ModalPago from '../components/pedidos/ModalPago';
+import HistorialPedido from '../components/pedidos/HistorialPedido';
 import './Pedidos.css';
 
 function Pedidos() {
@@ -10,6 +12,7 @@ function Pedidos() {
   const [clientes, setClientes] = useState([]);
   const [productos, setProductos] = useState([]);
   const [repartidores, setRepartidores] = useState([]);
+  const [sucursales, setSucursales] = useState([]);
   const [resumen, setResumen] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -17,14 +20,17 @@ function Pedidos() {
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroRepartidor, setFiltroRepartidor] = useState('');
+  const [filtroSucursal, setFiltroSucursal] = useState('');
   const [pedidoEntrega, setPedidoEntrega] = useState(null); // Para el modal de entrega
+  const [showModalPago, setShowModalPago] = useState(false); // Para el modal de pagos
+  const [pedidoHistorial, setPedidoHistorial] = useState(null); // Para el modal de historial
 
   const isAdmin = usuario?.rol === 'admin';
   const isAdminRepartidor = usuario?.rol === 'administrador_repartidor';
   const isEncargado = usuario?.rol === 'encargado';
   const isRepartidor = usuario?.rol === 'repartidor';
   const canManageAll = isAdmin || isAdminRepartidor;
-  const canEdit = isAdmin || isAdminRepartidor || isEncargado;
+  const canEdit = isAdmin || isAdminRepartidor || isEncargado || isRepartidor;
 
   useEffect(() => {
     cargarDatosBase();
@@ -32,18 +38,20 @@ function Pedidos() {
 
   useEffect(() => {
     cargarPedidos();
-  }, [fecha, filtroEstado, filtroRepartidor]);
+  }, [fecha, filtroEstado, filtroRepartidor, filtroSucursal]);
 
   const cargarDatosBase = async () => {
     try {
-      const [clientesData, productosData, repartidoresData] = await Promise.all([
+      const [clientesData, productosData, repartidoresData, sucursalesData] = await Promise.all([
         api.get('/clientes?activo=true'),
         api.get('/productos?activo=true'),
-        api.get('/pedidos/repartidores')
+        api.get('/pedidos/repartidores'),
+        api.get('/sucursales')
       ]);
       setClientes(clientesData);
       setProductos(productosData);
       setRepartidores(repartidoresData);
+      setSucursales(sucursalesData.filter(s => !s.esVirtual));
     } catch (error) {
       console.error('Error:', error);
     }
@@ -55,11 +63,13 @@ function Pedidos() {
       let params = `?fecha=${fecha}`;
       if (filtroEstado) params += `&estado=${filtroEstado}`;
       if (filtroRepartidor) params += `&repartidorId=${filtroRepartidor}`;
+      if (filtroSucursal) params += `&sucursalId=${filtroSucursal}`;
 
       const [pedidosData, resumenData] = await Promise.all([
         api.get(`/pedidos${params}`),
         api.get(`/pedidos/resumen-dia?fecha=${fecha}`)
       ]);
+
       setPedidos(pedidosData);
       setResumen(resumenData);
     } catch (error) {
@@ -171,11 +181,18 @@ function Pedidos() {
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">Pedidos</h1>
-        {canEdit && (
-          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-            + Nuevo Pedido
-          </button>
-        )}
+        <div className="page-header-actions">
+          {canEdit && (
+            <button className="btn btn-secondary" onClick={() => setShowModalPago(true)}>
+              Registrar Pago
+            </button>
+          )}
+          {canEdit && (
+            <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+              + Nuevo Pedido
+            </button>
+          )}
+        </div>
       </div>
 
       {resumen && (
@@ -249,6 +266,20 @@ function Pedidos() {
             </select>
           </div>
         )}
+
+        <div className="form-group">
+          <label className="form-label">Sucursal</label>
+          <select
+            className="form-input"
+            value={filtroSucursal}
+            onChange={(e) => setFiltroSucursal(e.target.value)}
+          >
+            <option value="">Todas</option>
+            {sucursales.map(s => (
+              <option key={s.id} value={s.id}>{s.nombre}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="pedidos-lista">
@@ -276,11 +307,18 @@ function Pedidos() {
                 ))}
               </div>
 
-              {pedido.repartidor && (
-                <div className="pedido-repartidor">
-                  Repartidor: {pedido.repartidor.nombre}
-                </div>
-              )}
+              <div className="pedido-meta">
+                {pedido.sucursal && (
+                  <span className="pedido-sucursal">
+                    {pedido.sucursal.nombre}
+                  </span>
+                )}
+                {pedido.repartidor && (
+                  <span className="pedido-repartidor">
+                    {pedido.repartidor.nombre}
+                  </span>
+                )}
+              </div>
 
               {pedido.notas && (
                 <div className="pedido-notas">{pedido.notas}</div>
@@ -363,6 +401,13 @@ function Pedidos() {
                     Entregar
                   </button>
                 )}
+                <button
+                  className="btn btn-outline btn-sm"
+                  onClick={() => setPedidoHistorial(pedido.id)}
+                  title="Ver historial de cambios"
+                >
+                  Historial
+                </button>
               </div>
             </div>
           ))
@@ -375,6 +420,7 @@ function Pedidos() {
           clientes={clientes}
           productos={productos}
           repartidores={repartidores}
+          sucursales={sucursales}
           onSubmit={handleSubmit}
           onClose={() => {
             setShowForm(false);
@@ -393,13 +439,30 @@ function Pedidos() {
           onClose={() => setPedidoEntrega(null)}
         />
       )}
+
+      {showModalPago && (
+        <ModalPago
+          onClose={() => setShowModalPago(false)}
+          onPagoRegistrado={() => {
+            cargarPedidos();
+          }}
+        />
+      )}
+
+      {pedidoHistorial && (
+        <HistorialPedido
+          pedidoId={pedidoHistorial}
+          onClose={() => setPedidoHistorial(null)}
+        />
+      )}
     </div>
   );
 }
 
-function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClose, onClienteCreated }) {
+function PedidoForm({ pedido, clientes, productos, repartidores, sucursales, onSubmit, onClose, onClienteCreated }) {
   const [clienteId, setClienteId] = useState(pedido?.clienteId || '');
   const [repartidorId, setRepartidorId] = useState(pedido?.repartidorId || '');
+  const [sucursalId, setSucursalId] = useState(pedido?.sucursalId || '');
   const [notas, setNotas] = useState(pedido?.notas || '');
   const [detalles, setDetalles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -435,6 +498,10 @@ function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClo
       } else {
         const cliente = clientes.find(c => c.id === parseInt(clienteId));
         if (cliente) {
+          // Auto-seleccionar sucursal del cliente
+          if (cliente.sucursalId && !pedido) {
+            setSucursalId(cliente.sucursalId);
+          }
           setDetalles(prev => prev.map(d => {
             const precioCliente = cliente.precios?.find(p => p.productoId === d.productoId);
             const producto = productos.find(p => p.id === d.productoId);
@@ -503,6 +570,7 @@ function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClo
     await onSubmit({
       clienteId: clienteId || null,
       repartidorId: repartidorId || null,
+      sucursalId: sucursalId || null,
       notas: notas || null,
       detalles: detallesConCantidad.map(d => ({
         productoId: d.productoId,
@@ -568,6 +636,20 @@ function PedidoForm({ pedido, clientes, productos, repartidores, onSubmit, onClo
                 <option value="">Sin asignar</option>
                 {repartidores.map(r => (
                   <option key={r.id} value={r.id}>{r.nombre}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Sucursal</label>
+              <select
+                className="form-input"
+                value={sucursalId}
+                onChange={(e) => setSucursalId(e.target.value)}
+              >
+                <option value="">Sin asignar</option>
+                {sucursales.map(s => (
+                  <option key={s.id} value={s.id}>{s.nombre}</option>
                 ))}
               </select>
             </div>

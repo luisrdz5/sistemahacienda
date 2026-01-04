@@ -15,12 +15,19 @@ import PrecioSucursal from './PrecioSucursal.js';
 import Insumo from './Insumo.js';
 import PrecioInsumo from './PrecioInsumo.js';
 import Abono from './Abono.js';
+import DetalleCierre from './DetalleCierre.js';
+import HistorialPedido from './HistorialPedido.js';
+import UsuarioRol from './UsuarioRol.js';
 
 // Asociaciones
 
 // Usuario - Sucursal
 Usuario.belongsTo(Sucursal, { foreignKey: 'sucursalId', as: 'sucursal' });
 Sucursal.hasMany(Usuario, { foreignKey: 'sucursalId', as: 'usuarios' });
+
+// Usuario - Cliente (para usuarios tipo cliente)
+Usuario.belongsTo(Cliente, { foreignKey: 'clienteId', as: 'cliente' });
+Cliente.hasOne(Usuario, { foreignKey: 'clienteId', as: 'usuario' });
 
 // Corte - Sucursal
 Corte.belongsTo(Sucursal, { foreignKey: 'sucursalId', as: 'sucursal' });
@@ -46,6 +53,11 @@ Sucursal.hasMany(Empleado, { foreignKey: 'sucursalId', as: 'empleados' });
 Cliente.hasMany(PrecioCliente, { foreignKey: 'clienteId', as: 'precios' });
 PrecioCliente.belongsTo(Cliente, { foreignKey: 'clienteId', as: 'cliente' });
 
+// Cliente - Sucursal (principal y backup)
+Cliente.belongsTo(Sucursal, { foreignKey: 'sucursalId', as: 'sucursal' });
+Sucursal.hasMany(Cliente, { foreignKey: 'sucursalId', as: 'clientes' });
+Cliente.belongsTo(Sucursal, { foreignKey: 'sucursalBackupId', as: 'sucursalBackup' });
+
 // Producto - PrecioCliente
 Producto.hasMany(PrecioCliente, { foreignKey: 'productoId', as: 'preciosClientes' });
 PrecioCliente.belongsTo(Producto, { foreignKey: 'productoId', as: 'producto' });
@@ -61,6 +73,11 @@ PrecioSucursal.belongsTo(Producto, { foreignKey: 'productoId', as: 'producto' })
 // Pedido - Cliente
 Pedido.belongsTo(Cliente, { foreignKey: 'clienteId', as: 'cliente' });
 Cliente.hasMany(Pedido, { foreignKey: 'clienteId', as: 'pedidos' });
+
+// Pedido - Sucursales (principal, backup, actual)
+Pedido.belongsTo(Sucursal, { foreignKey: 'sucursalId', as: 'sucursal' });
+Pedido.belongsTo(Sucursal, { foreignKey: 'sucursalBackupId', as: 'sucursalBackup' });
+Pedido.belongsTo(Sucursal, { foreignKey: 'sucursalActualId', as: 'sucursalActual' });
 
 // Pedido - Usuario (repartidor)
 Pedido.belongsTo(Usuario, { foreignKey: 'repartidorId', as: 'repartidor' });
@@ -82,6 +99,19 @@ Producto.hasMany(DetallePedido, { foreignKey: 'productoId', as: 'detallesPedidos
 CortePedidos.belongsTo(Usuario, { foreignKey: 'repartidorId', as: 'repartidor' });
 Usuario.hasMany(CortePedidos, { foreignKey: 'repartidorId', as: 'cortesPedidos' });
 
+// CortePedidos - Usuario (cerrado por)
+CortePedidos.belongsTo(Usuario, { foreignKey: 'cerradoPorId', as: 'cerradoPor' });
+
+// CortePedidos - DetalleCierre
+CortePedidos.hasMany(DetalleCierre, { foreignKey: 'cortePedidoId', as: 'detallesCierre' });
+DetalleCierre.belongsTo(CortePedidos, { foreignKey: 'cortePedidoId', as: 'cortePedido' });
+
+// DetalleCierre - Pedido
+DetalleCierre.belongsTo(Pedido, { foreignKey: 'pedidoId', as: 'pedido' });
+
+// DetalleCierre - Abono
+DetalleCierre.belongsTo(Abono, { foreignKey: 'abonoId', as: 'abono' });
+
 // Insumo - PrecioInsumo
 Insumo.hasMany(PrecioInsumo, { foreignKey: 'insumoId', as: 'precios' });
 PrecioInsumo.belongsTo(Insumo, { foreignKey: 'insumoId', as: 'insumo' });
@@ -93,6 +123,26 @@ Abono.belongsTo(Pedido, { foreignKey: 'pedidoId', as: 'pedido' });
 // Abono - Usuario (registrado por)
 Abono.belongsTo(Usuario, { foreignKey: 'registradoPorId', as: 'registradoPor' });
 Usuario.hasMany(Abono, { foreignKey: 'registradoPorId', as: 'abonosRegistrados' });
+
+// Abono - Cliente (pagos a nivel cliente)
+Abono.belongsTo(Cliente, { foreignKey: 'clienteId', as: 'cliente' });
+Cliente.hasMany(Abono, { foreignKey: 'clienteId', as: 'abonos' });
+
+// HistorialPedido - Pedido
+Pedido.hasMany(HistorialPedido, { foreignKey: 'pedidoId', as: 'historial' });
+HistorialPedido.belongsTo(Pedido, { foreignKey: 'pedidoId', as: 'pedido' });
+
+// HistorialPedido - Usuario
+HistorialPedido.belongsTo(Usuario, { foreignKey: 'usuarioId', as: 'usuario' });
+Usuario.hasMany(HistorialPedido, { foreignKey: 'usuarioId', as: 'historialAcciones' });
+
+// UsuarioRol - Usuario
+Usuario.hasMany(UsuarioRol, { foreignKey: 'usuarioId', as: 'rolesAdicionales' });
+UsuarioRol.belongsTo(Usuario, { foreignKey: 'usuarioId', as: 'usuario' });
+
+// UsuarioRol - Sucursal
+UsuarioRol.belongsTo(Sucursal, { foreignKey: 'sucursalId', as: 'sucursal' });
+Sucursal.hasMany(UsuarioRol, { foreignKey: 'sucursalId', as: 'usuarioRoles' });
 
 export {
   sequelize,
@@ -111,5 +161,8 @@ export {
   CortePedidos,
   Insumo,
   PrecioInsumo,
-  Abono
+  Abono,
+  DetalleCierre,
+  HistorialPedido,
+  UsuarioRol
 };

@@ -32,6 +32,36 @@ const CortePedidos = sequelize.define('CortePedidos', {
     type: DataTypes.ENUM('borrador', 'completado'),
     allowNull: false,
     defaultValue: 'borrador'
+  },
+  // Campos para cierre de caja
+  efectivoEsperado: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    field: 'efectivo_esperado'
+  },
+  efectivoRecibido: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    field: 'efectivo_recibido'
+  },
+  diferencia: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true
+  },
+  cerradoPorId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'cerrado_por_id'
+  },
+  cerradoAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'cerrado_at'
+  },
+  notasCierre: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'notas_cierre'
   }
 }, {
   tableName: 'cortes_pedidos',

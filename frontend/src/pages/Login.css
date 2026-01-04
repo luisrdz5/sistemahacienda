@@ -17,10 +17,15 @@
 }
 
 .login-header {
-  padding: var(--spacing-8) var(--spacing-6);
+  padding: var(--spacing-6);
   text-align: center;
-  background: var(--color-gray-50);
+  background: #f5f5dc; /* Color crema del logo */
   border-bottom: 1px solid var(--color-gray-200);
+}
+
+.login-logo {
+  max-width: 200px;
+  height: auto;
 }
 
 .login-title {

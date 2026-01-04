@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import logo from '../assets/logo.png';
 import './Login.css';
 
 // Google Client ID desde variable de entorno
@@ -102,8 +103,7 @@ function Login() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <h1 className="login-title">Hacienda</h1>
-          <p className="login-subtitle">Sistema de Cortes</p>
+          <img src={logo} alt="La Hacienda Tortillas" className="login-logo" />
         </div>
 
         <div className="login-content">

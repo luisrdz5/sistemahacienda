@@ -12,6 +12,8 @@ import clientesRoutes from './clientes.js';
 import pedidosRoutes from './pedidos.js';
 import cortesPedidosRoutes from './cortesPedidos.js';
 import insumosRoutes from './insumos.js';
+import clientePortalRoutes from './clientePortal.js';
+import pagosRoutes from './pagos.js';
 
 const router = Router();
 
@@ -33,5 +35,7 @@ router.use('/clientes', clientesRoutes);
 router.use('/pedidos', pedidosRoutes);
 router.use('/cortes-pedidos', cortesPedidosRoutes);
 router.use('/insumos', insumosRoutes);
+router.use('/cliente', clientePortalRoutes);
+router.use('/pagos', pagosRoutes);
 
 export default router;

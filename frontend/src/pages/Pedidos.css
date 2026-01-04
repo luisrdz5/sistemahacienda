@@ -1,3 +1,9 @@
+.page-header-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
 .pedidos-resumen {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -121,10 +127,26 @@
   font-size: var(--font-size-sm);
 }
 
-.pedido-repartidor {
+.pedido-meta {
+  display: flex;
+  gap: var(--spacing-3);
   font-size: var(--font-size-sm);
   color: var(--color-gray-600);
   margin-bottom: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+.pedido-sucursal {
+  background: var(--color-primary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+.pedido-repartidor {
+  color: var(--color-gray-600);
 }
 
 .pedido-notas {
@@ -137,6 +159,16 @@
 .pedido-actions {
   display: flex;
   gap: var(--spacing-2);
+}
+
+/* Modal para pedidos */
+.modal-lg {
+  max-width: 700px;
+}
+
+.modal-lg .modal-content {
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
 }
 
 /* Form */
@@ -345,6 +377,17 @@
 
 .btn-preparado:hover {
   background-color: #0e7490;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-gray-600);
+  border: 1px solid var(--color-gray-300);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-800);
 }
 
 /* Observaciones y saldo pendiente */

@@ -66,6 +66,59 @@ const Pedido = sequelize.define('Pedido', {
     type: DataTypes.DATE,
     allowNull: true,
     field: 'fecha_preparado'
+  },
+  // Tracking de sucursales
+  sucursalId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'sucursal_id'
+  },
+  sucursalBackupId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'sucursal_backup_id'
+  },
+  sucursalActualId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'sucursal_actual_id'
+  },
+  transferido: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  sucursalOcupada: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'sucursal_ocupada'
+  },
+  // Tracking de tiempos
+  fechaAsignacion: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'fecha_asignacion'
+  },
+  fechaDespacho: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'fecha_despacho'
+  },
+  demoraPreparacionSeg: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'demora_preparacion_seg'
+  },
+  demoraEntregaSeg: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'demora_entrega_seg'
+  },
+  demoraTotalSeg: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'demora_total_seg'
   }
 }, {
   tableName: 'pedidos',

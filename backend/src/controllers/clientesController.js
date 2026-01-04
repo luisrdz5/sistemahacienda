@@ -1,4 +1,19 @@
-import { Cliente, PrecioCliente, PrecioSucursal, Producto } from '../models/index.js';
+import { Op } from 'sequelize';
+import { Cliente, PrecioCliente, PrecioSucursal, Producto, Pedido, Sucursal, sequelize } from '../models/index.js';
+
+/**
+ * Calcular adeudo de un cliente
+ */
+const calcularAdeudo = async (clienteId) => {
+  const result = await Pedido.sum('saldoPendiente', {
+    where: {
+      clienteId,
+      estado: 'entregado',
+      saldoPendiente: { [Op.gt]: 0 }
+    }
+  });
+  return parseFloat(result) || 0;
+};
 
 /**
  * Listar clientes
@@ -14,15 +29,29 @@ export const getAll = async (req, res, next) => {
 
     const clientes = await Cliente.findAll({
       where,
-      include: [{
-        model: PrecioCliente,
-        as: 'precios',
-        include: [{ model: Producto, as: 'producto' }]
-      }],
+      include: [
+        {
+          model: PrecioCliente,
+          as: 'precios',
+          include: [{ model: Producto, as: 'producto' }]
+        },
+        { model: Sucursal, as: 'sucursal', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursalBackup', attributes: ['id', 'nombre'] }
+      ],
       order: [['nombre', 'ASC']]
     });
 
-    res.json(clientes);
+    // Agregar adeudo a cada cliente
+    const clientesConAdeudo = await Promise.all(clientes.map(async (c) => {
+      const adeudoTotal = await calcularAdeudo(c.id);
+      return {
+        ...c.toJSON(),
+        adeudoTotal,
+        creditoDisponible: Math.max(0, (c.limiteCredito || 200) - adeudoTotal)
+      };
+    }));
+
+    res.json(clientesConAdeudo);
   } catch (error) {
     next(error);
   }
@@ -56,7 +85,7 @@ export const getById = async (req, res, next) => {
  */
 export const create = async (req, res, next) => {
   try {
-    const { nombre, telefono, direccion, notas, precios } = req.body;
+    const { nombre, telefono, direccion, notas, precios, limiteCredito, sucursalId, sucursalBackupId } = req.body;
 
     if (!nombre) {
       return res.status(400).json({ error: 'Nombre es requerido' });
@@ -66,7 +95,11 @@ export const create = async (req, res, next) => {
       nombre,
       telefono,
       direccion,
-      notas
+      notas,
+      limiteCredito: limiteCredito || 200,
+      sucursalId: sucursalId || null,
+      sucursalBackupId: sucursalBackupId || null,
+      aprobado: true // Clientes creados desde admin se aprueban automaticamente
     });
 
     // Crear precios personalizados si se proporcionan
@@ -82,16 +115,24 @@ export const create = async (req, res, next) => {
       }
     }
 
-    // Recargar con precios
+    // Recargar con precios y sucursales
     const clienteConPrecios = await Cliente.findByPk(cliente.id, {
-      include: [{
-        model: PrecioCliente,
-        as: 'precios',
-        include: [{ model: Producto, as: 'producto' }]
-      }]
+      include: [
+        {
+          model: PrecioCliente,
+          as: 'precios',
+          include: [{ model: Producto, as: 'producto' }]
+        },
+        { model: Sucursal, as: 'sucursal', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursalBackup', attributes: ['id', 'nombre'] }
+      ]
     });
 
-    res.status(201).json(clienteConPrecios);
+    res.status(201).json({
+      ...clienteConPrecios.toJSON(),
+      adeudoTotal: 0,
+      creditoDisponible: clienteConPrecios.limiteCredito || 200
+    });
   } catch (error) {
     next(error);
   }
@@ -108,14 +149,17 @@ export const update = async (req, res, next) => {
       return res.status(404).json({ error: 'Cliente no encontrado' });
     }
 
-    const { nombre, telefono, direccion, notas, activo, precios } = req.body;
+    const { nombre, telefono, direccion, notas, activo, precios, limiteCredito, sucursalId, sucursalBackupId } = req.body;
 
     await cliente.update({
       nombre: nombre ?? cliente.nombre,
       telefono: telefono ?? cliente.telefono,
       direccion: direccion ?? cliente.direccion,
       notas: notas ?? cliente.notas,
-      activo: activo ?? cliente.activo
+      activo: activo ?? cliente.activo,
+      limiteCredito: limiteCredito !== undefined ? limiteCredito : cliente.limiteCredito,
+      sucursalId: sucursalId !== undefined ? sucursalId : cliente.sucursalId,
+      sucursalBackupId: sucursalBackupId !== undefined ? sucursalBackupId : cliente.sucursalBackupId
     });
 
     // Actualizar precios si se proporcionan
@@ -135,16 +179,28 @@ export const update = async (req, res, next) => {
       }
     }
 
-    // Recargar con precios
+    // Recargar con precios y sucursales
     const clienteActualizado = await Cliente.findByPk(cliente.id, {
-      include: [{
-        model: PrecioCliente,
-        as: 'precios',
-        include: [{ model: Producto, as: 'producto' }]
-      }]
+      include: [
+        {
+          model: PrecioCliente,
+          as: 'precios',
+          include: [{ model: Producto, as: 'producto' }]
+        },
+        { model: Sucursal, as: 'sucursal', attributes: ['id', 'nombre'] },
+        { model: Sucursal, as: 'sucursalBackup', attributes: ['id', 'nombre'] }
+      ]
     });
 
-    res.json(clienteActualizado);
+    // Agregar adeudo
+    const adeudoTotal = await calcularAdeudo(cliente.id);
+    const response = {
+      ...clienteActualizado.toJSON(),
+      adeudoTotal,
+      creditoDisponible: Math.max(0, (clienteActualizado.limiteCredito || 200) - adeudoTotal)
+    };
+
+    res.json(response);
   } catch (error) {
     next(error);
   }

@@ -24,7 +24,7 @@
 
 .cliente-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--spacing-2);
 }
@@ -33,6 +33,24 @@
   margin: 0;
   font-size: var(--font-size-lg);
   font-weight: 600;
+  flex: 1;
+}
+
+.cliente-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.badge-info {
+  background: #dbeafe;
+  color: #2563eb;
+  font-size: 10px;
 }
 
 .cliente-info {
@@ -55,6 +73,77 @@
 
 .info-icon {
   font-size: var(--font-size-base);
+}
+
+/* Seccion de credito */
+.cliente-credito {
+  background: var(--color-gray-50);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+}
+
+.credito-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: var(--font-size-sm);
+}
+
+.credito-header span:first-child {
+  color: var(--color-gray-500);
+  font-weight: 500;
+}
+
+.credito-limite {
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+.cliente-credito .credito-bar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.cliente-credito .credito-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.credito-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.credito-stats .adeudo {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.credito-stats .disponible {
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* Header actions */
+.page-header-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.btn-warning:hover {
+  background: #d97706;
 }
 
 .cliente-precios {
@@ -152,7 +241,7 @@
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--spacing-4);
 }
 

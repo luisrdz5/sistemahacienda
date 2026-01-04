@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as clientesController from '../controllers/clientesController.js';
+import * as clienteAuthController from '../controllers/clienteAuthController.js';
 import { authenticate, isAdmin, isAdminRepartidor } from '../middlewares/auth.js';
 
 const router = Router();
@@ -21,6 +22,18 @@ const router = Router();
  *         description: Lista de clientes
  */
 router.get('/', authenticate, clientesController.getAll);
+
+/**
+ * @swagger
+ * /api/clientes/pendientes:
+ *   get:
+ *     summary: Listar clientes pendientes de aprobación
+ *     tags: [Clientes]
+ *     responses:
+ *       200:
+ *         description: Lista de clientes pendientes
+ */
+router.get('/pendientes', authenticate, isAdminRepartidor, clienteAuthController.getClientesPendientes);
 
 /**
  * @swagger
@@ -169,5 +182,45 @@ router.put('/:id', authenticate, isAdminRepartidor, clientesController.update);
  *         description: Cliente no encontrado
  */
 router.delete('/:id', authenticate, isAdmin, clientesController.remove);
+
+/**
+ * @swagger
+ * /api/clientes/{id}/aprobar:
+ *   put:
+ *     summary: Aprobar cliente
+ *     tags: [Clientes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Cliente aprobado
+ *       404:
+ *         description: Cliente no encontrado
+ */
+router.put('/:id/aprobar', authenticate, isAdminRepartidor, clienteAuthController.aprobarCliente);
+
+/**
+ * @swagger
+ * /api/clientes/{id}/rechazar:
+ *   delete:
+ *     summary: Rechazar y eliminar solicitud de cliente
+ *     tags: [Clientes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Cliente rechazado
+ *       404:
+ *         description: Cliente no encontrado
+ */
+router.delete('/:id/rechazar', authenticate, isAdminRepartidor, clienteAuthController.rechazarCliente);
 
 export default router;
