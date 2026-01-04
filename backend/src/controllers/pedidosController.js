@@ -861,27 +861,33 @@ export const getClientesDeudores = async (req, res, next) => {
   try {
     const { periodo, repartidorId } = req.query;
 
-    // Determinar rango de fechas
+    // Determinar rango de fechas (opcional)
     const hoy = new Date();
-    let fechaInicio;
+    let fechaInicio = null;
+    let fechaInicioStr = null;
+    let fechaFinStr = hoy.toISOString().split('T')[0];
 
     if (periodo === 'mensual') {
       fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    } else {
-      // Semanal por defecto - domingo de esta semana
+      fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+    } else if (periodo === 'semanal') {
+      // Semanal - domingo de esta semana
       const dayOfWeek = hoy.getDay();
       fechaInicio = new Date(hoy);
       fechaInicio.setDate(hoy.getDate() - dayOfWeek);
+      fechaInicioStr = fechaInicio.toISOString().split('T')[0];
     }
-
-    const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
-    const fechaFinStr = hoy.toISOString().split('T')[0];
+    // Si no se especifica periodo, mostrar TODOS los deudores
 
     const whereClause = {
       saldoPendiente: { [Op.gt]: 0 },
-      estado: 'entregado',
-      fecha: { [Op.between]: [fechaInicioStr, fechaFinStr] }
+      estado: 'entregado'
     };
+
+    // Solo aplicar filtro de fecha si se especificó periodo
+    if (fechaInicioStr) {
+      whereClause.fecha = { [Op.between]: [fechaInicioStr, fechaFinStr] };
+    }
 
     // Repartidores solo ven sus propios deudores
     if (req.user.rol === 'repartidor') {
@@ -970,7 +976,7 @@ export const getClientesDeudores = async (req, res, next) => {
       totalClientes: clientes.length,
       totalDeuda: clientes.reduce((sum, c) => sum + c.totalDeuda, 0),
       totalPedidos: pedidosPendientes.length,
-      periodo: periodo || 'semanal',
+      periodo: periodo || 'todos',
       fechaInicio: fechaInicioStr,
       fechaFin: fechaFinStr
     };
