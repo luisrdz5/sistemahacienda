@@ -20,7 +20,7 @@ function Sidebar() {
     const path = location.pathname;
     const sections = {};
 
-    if (['/dashboard', '/auditoria', '/resumen-semanal', '/resumen-mensual', '/resumen-anual'].includes(path)) {
+    if (['/dashboard', '/auditoria', '/resumen-semanal', '/resumen-mensual', '/resumen-anual', '/corte-pedidos'].includes(path)) {
       sections.dashboards = true;
     }
     if (['/pedidos', '/corte-pedidos', '/repartos-pendientes', '/clientes-deudores'].includes(path)) {
@@ -64,6 +64,7 @@ function Sidebar() {
         { path: '/resumen-semanal', label: 'Resumen Semanal', icon: '📈' },
         { path: '/resumen-mensual', label: 'Resumen Mensual', icon: '🗓️' },
         { path: '/resumen-anual', label: 'Resumen Anual', icon: '📆' },
+        { path: '/corte-pedidos', label: 'Cierre de Caja', icon: '💵' },
       ]
     }] : []),
 
