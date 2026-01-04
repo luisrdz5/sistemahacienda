@@ -63,7 +63,7 @@ const HistorialPedido = sequelize.define('HistorialPedido', {
 
 // Helper para registrar acciones
 HistorialPedido.registrar = async function(pedidoId, usuarioId, accion, descripcion, opciones = {}) {
-  return this.create({
+  const createOptions = {
     pedidoId,
     usuarioId,
     accion,
@@ -71,7 +71,13 @@ HistorialPedido.registrar = async function(pedidoId, usuarioId, accion, descripc
     datosAnteriores: opciones.datosAnteriores || null,
     datosNuevos: opciones.datosNuevos || null,
     ipAddress: opciones.ipAddress || null
-  });
+  };
+
+  // Si se pasa una transacción, usarla
+  if (opciones.transaction) {
+    return this.create(createOptions, { transaction: opciones.transaction });
+  }
+  return this.create(createOptions);
 };
 
 // Mapeo de acciones a descripciones legibles

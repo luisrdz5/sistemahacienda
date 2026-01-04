@@ -712,16 +712,23 @@ function PedidoForm({ pedido, clientes, productos, repartidores, sucursales, onS
 
           <div className="productos-pedido">
             <h4>Productos</h4>
-            <div className="productos-grid">
+            <div className="pedido-productos-lista">
               {productos.map(producto => {
                 const detalle = detalles.find(d => d.productoId === producto.id);
                 return (
                   <div key={producto.id} className="producto-pedido-item">
-                    <div className="producto-info">
-                      <span className="producto-nombre">{producto.nombre}</span>
-                      <span className="producto-precio">
-                        {formatMoney(detalle?.precioUnitario || producto.precioLista)}/{producto.unidad}
-                      </span>
+                    <div className="producto-pedido-row">
+                      <div className="producto-info">
+                        <span className="producto-nombre">{producto.nombre}</span>
+                        <span className="producto-precio">
+                          {formatMoney(detalle?.precioUnitario || producto.precioLista)}/{producto.unidad}
+                        </span>
+                      </div>
+                      {detalle?.cantidad > 0 && (
+                        <div className="producto-subtotal">
+                          {formatMoney(detalle.cantidad * detalle.precioUnitario)}
+                        </div>
+                      )}
                     </div>
                     <div className="producto-cantidad">
                       <button
@@ -748,11 +755,6 @@ function PedidoForm({ pedido, clientes, productos, repartidores, sucursales, onS
                         +
                       </button>
                     </div>
-                    {detalle?.cantidad > 0 && (
-                      <div className="producto-subtotal">
-                        {formatMoney(detalle.cantidad * detalle.precioUnitario)}
-                      </div>
-                    )}
                   </div>
                 );
               })}

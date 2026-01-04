@@ -179,7 +179,8 @@ export const create = async (req, res, next) => {
     await HistorialPedido.registrar(pedido.id, req.user.id, 'creado',
       `Pedido creado por ${req.user.nombre || req.user.email}`, {
         datosNuevos: { clienteId, repartidorId, total, detalles: detalles.length },
-        ipAddress: getClientIP(req)
+        ipAddress: getClientIP(req),
+        transaction: t
       });
 
     await t.commit();
@@ -285,14 +286,16 @@ export const update = async (req, res, next) => {
         `Repartidor ${datosAnteriores.repartidorId ? 'cambiado' : 'asignado'} por ${req.user.nombre || req.user.email}`, {
           datosAnteriores: { repartidorId: datosAnteriores.repartidorId },
           datosNuevos: { repartidorId },
-          ipAddress: getClientIP(req)
+          ipAddress: getClientIP(req),
+          transaction: t
         });
     } else {
       await HistorialPedido.registrar(pedido.id, req.user.id, 'editado',
         `Pedido editado por ${req.user.nombre || req.user.email}`, {
           datosAnteriores,
           datosNuevos: { clienteId, repartidorId, notas },
-          ipAddress: getClientIP(req)
+          ipAddress: getClientIP(req),
+          transaction: t
         });
     }
 
@@ -477,7 +480,8 @@ export const entregar = async (req, res, next) => {
       `Entregado por ${req.user.nombre || req.user.email}${demoraEntregaSeg ? ` (${Math.round(demoraEntregaSeg / 60)} min entrega)` : ''}`, {
         datosAnteriores: { estado: estadoAnterior },
         datosNuevos: { estado: 'entregado', demoraEntregaSeg, demoraTotalSeg },
-        ipAddress: getClientIP(req)
+        ipAddress: getClientIP(req),
+        transaction: t
       });
 
     // Registrar pago en historial si aplica
@@ -485,7 +489,8 @@ export const entregar = async (req, res, next) => {
       await HistorialPedido.registrar(pedido.id, req.user.id, 'pago_registrado',
         `Pago de $${montoAbono.toFixed(2)} (${tipoPago || 'efectivo'}) registrado por ${req.user.nombre || req.user.email}`, {
           datosNuevos: { monto: montoAbono, tipo: tipoPago || 'efectivo', saldoPendiente: nuevoSaldoPendiente },
-          ipAddress: getClientIP(req)
+          ipAddress: getClientIP(req),
+          transaction: t
         });
     }
 
@@ -692,7 +697,8 @@ export const registrarAbono = async (req, res, next) => {
     await HistorialPedido.registrar(pedido.id, req.user.id, 'abono_registrado',
       `Abono de $${montoAbono.toFixed(2)} (${tipo || 'efectivo'}) registrado por ${req.user.nombre || req.user.email}`, {
         datosNuevos: { monto: montoAbono, tipo: tipo || 'efectivo', saldoPendiente: nuevoSaldoPendiente },
-        ipAddress: getClientIP(req)
+        ipAddress: getClientIP(req),
+        transaction: t
       });
 
     await t.commit();
