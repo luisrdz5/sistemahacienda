@@ -53,10 +53,8 @@ export const getAll = async (req, res, next) => {
       where.sucursalId = sucursalId;
     }
 
-    // Repartidores solo ven sus propios pedidos
-    if (req.user.rol === 'repartidor') {
-      where.repartidorId = req.user.id;
-    }
+    // Repartidores pueden ver todos los pedidos para dar seguimiento
+    // (ya no se filtra por repartidorId del usuario)
 
     const pedidos = await Pedido.findAll({
       where,
@@ -600,10 +598,8 @@ export const getResumenDia = async (req, res, next) => {
 
     const where = { fecha: fechaConsulta };
 
-    // Repartidores solo ven su resumen
-    if (req.user.rol === 'repartidor') {
-      where.repartidorId = req.user.id;
-    }
+    // Repartidores pueden ver el resumen completo del día
+    // (ya no se filtra por repartidorId del usuario)
 
     const pedidos = await Pedido.findAll({
       where,
@@ -889,10 +885,9 @@ export const getClientesDeudores = async (req, res, next) => {
       whereClause.fecha = { [Op.between]: [fechaInicioStr, fechaFinStr] };
     }
 
-    // Repartidores solo ven sus propios deudores
-    if (req.user.rol === 'repartidor') {
-      whereClause.repartidorId = req.user.id;
-    } else if (repartidorId) {
+    // Repartidores pueden ver todos los deudores para dar seguimiento
+    // Solo filtrar por repartidor si se especifica explícitamente en query
+    if (repartidorId) {
       whereClause.repartidorId = repartidorId;
     }
 
