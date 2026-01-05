@@ -21,10 +21,9 @@ const Gasto = sequelize.define('Gasto', {
   },
   monto: {
     type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-    validate: {
-      min: 0
-    }
+    allowNull: false
+    // Nota: La validación de monto negativo se hace en el controlador
+    // Solo se permite monto negativo para la sucursal "Ahorro"
   }
 }, {
   tableName: 'gastos',

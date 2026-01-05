@@ -93,3 +93,12 @@
   padding: var(--spacing-1) var(--spacing-2);
   font-size: var(--font-size-sm);
 }
+
+/* Hint de ayuda debajo de inputs */
+.form-hint {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-1);
+  font-style: italic;
+}

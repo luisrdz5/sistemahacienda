@@ -19,6 +19,7 @@ function GastoForm({ onSubmit, onClose, sucursal }) {
 
   const esNomina = sucursal?.nombre === 'Nómina';
   const esGastosGlobales = sucursal?.nombre === 'Gastos Globales';
+  const esAhorro = sucursal?.nombre === 'Ahorro';
 
   useEffect(() => {
     // Cargar categorías
@@ -385,11 +386,16 @@ function GastoForm({ onSubmit, onClose, sucursal }) {
               className="form-input"
               value={monto}
               onChange={(e) => setMonto(e.target.value)}
-              placeholder="$0.00"
-              min="0"
+              placeholder={esAhorro ? "$0.00 (negativo = retiro)" : "$0.00"}
+              min={esAhorro ? undefined : "0"}
               step="0.01"
               required
             />
+            {esAhorro && (
+              <span className="form-hint">
+                Usa monto negativo para registrar retiros del ahorro
+              </span>
+            )}
           </div>
 
           <div className="modal-actions">

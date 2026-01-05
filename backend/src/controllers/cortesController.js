@@ -443,7 +443,9 @@ export const addGasto = async (req, res, next) => {
     const { corteId } = req.params;
     const { categoriaId, descripcion, monto } = req.body;
 
-    const corte = await Corte.findByPk(corteId);
+    const corte = await Corte.findByPk(corteId, {
+      include: [{ model: Sucursal, as: 'sucursal' }]
+    });
     if (!corte) {
       return res.status(404).json({ error: 'Corte no encontrado' });
     }
@@ -455,6 +457,12 @@ export const addGasto = async (req, res, next) => {
 
     if (!categoriaId || monto === undefined) {
       return res.status(400).json({ error: 'Categoría y monto son requeridos' });
+    }
+
+    // Validar monto negativo - solo permitido para sucursal "Ahorro"
+    const montoNumerico = parseFloat(monto);
+    if (montoNumerico < 0 && corte.sucursal?.nombre !== 'Ahorro') {
+      return res.status(400).json({ error: 'Solo se permiten montos negativos en la sucursal Ahorro (retiro de ahorro)' });
     }
 
     const gasto = await Gasto.create({
