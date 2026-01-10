@@ -283,9 +283,33 @@ function CortePedidos() {
           {miCorte.pedidos.length === 0 ? (
             <p className="empty-message">No tienes pedidos asignados</p>
           ) : (
-            miCorte.pedidos.map(pedido => (
-              <PedidoItem key={pedido.id} pedido={pedido} formatMoney={formatMoney} />
-            ))
+            <div className="columnas-estado-grid">
+              <ColumnaEstado
+                titulo="Por Preparar"
+                pedidos={miCorte.pedidos.filter(p => p.estado === 'pendiente')}
+                color="warning"
+                formatMoney={formatMoney}
+              />
+              <ColumnaEstado
+                titulo="Preparados"
+                pedidos={miCorte.pedidos.filter(p => p.estado === 'preparado')}
+                color="preparado"
+                formatMoney={formatMoney}
+              />
+              <ColumnaEstado
+                titulo="En Camino"
+                pedidos={miCorte.pedidos.filter(p => p.estado === 'en_camino')}
+                color="info"
+                formatMoney={formatMoney}
+              />
+              <ColumnaEstado
+                titulo="Entregados"
+                pedidos={miCorte.pedidos.filter(p => p.estado === 'entregado')}
+                color="success"
+                formatMoney={formatMoney}
+                showPago={true}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -433,28 +457,60 @@ function CortePedidos() {
   return <div className="page"><p>No tienes acceso a esta seccion</p></div>;
 }
 
-function PedidoItem({ pedido, formatMoney }) {
+function PedidoItem({ pedido, formatMoney, showPago = false }) {
   const getEstadoBadge = (estado) => {
     const badges = {
       pendiente: 'badge-warning',
+      preparado: 'badge-preparado',
+      en_camino: 'badge-info',
       entregado: 'badge-success',
       cancelado: 'badge-error'
     };
     return badges[estado] || 'badge-secondary';
   };
 
+  const saldoPendiente = parseFloat(pedido.saldoPendiente || 0);
+  const estaPagado = saldoPendiente <= 0;
+
   return (
     <div className={`pedido-corte-item estado-${pedido.estado}`}>
-      <div className="pedido-info">
+      <div className="pedido-item-header">
         <strong>{pedido.cliente?.nombre || 'Sin cliente'}</strong>
-        <span className={`badge ${getEstadoBadge(pedido.estado)}`}>{pedido.estado}</span>
+        {showPago && pedido.estado === 'entregado' && (
+          <span className={`pago-badge ${estaPagado ? 'pagado' : 'pendiente'}`}>
+            {estaPagado ? 'Pagado' : 'Debe'}
+          </span>
+        )}
       </div>
       <div className="pedido-detalles-mini">
         {pedido.detalles?.map(d => (
           <span key={d.id}>{d.cantidad} {d.producto?.nombre}</span>
         ))}
       </div>
-      <div className="pedido-total">{formatMoney(pedido.total)}</div>
+      <div className="pedido-item-footer">
+        <span className="pedido-total">{formatMoney(pedido.total)}</span>
+        {showPago && !estaPagado && saldoPendiente > 0 && (
+          <span className="saldo-pendiente">Debe: {formatMoney(saldoPendiente)}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ColumnaEstado({ titulo, pedidos, color, formatMoney, showPago = false }) {
+  if (pedidos.length === 0) return null;
+
+  return (
+    <div className={`columna-estado columna-${color}`}>
+      <div className="columna-header">
+        <h3>{titulo}</h3>
+        <span className="columna-count">{pedidos.length}</span>
+      </div>
+      <div className="columna-pedidos">
+        {pedidos.map(pedido => (
+          <PedidoItem key={pedido.id} pedido={pedido} formatMoney={formatMoney} showPago={showPago} />
+        ))}
+      </div>
     </div>
   );
 }

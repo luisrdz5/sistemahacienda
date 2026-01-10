@@ -105,52 +105,58 @@ function RepartosPendientes() {
             </div>
           </div>
 
-          <div className="repartos-lista">
+          <div className="repartos-columnas">
             {data.pedidos.length === 0 ? (
               <div className="empty-repartos">
                 <p>No hay repartos pendientes para esta fecha</p>
               </div>
             ) : (
-              data.pedidos.map(pedido => (
-                <div key={pedido.id} className={`reparto-card estado-${pedido.estado}`}>
-                  <div className="reparto-header">
-                    <div className="reparto-cliente">
-                      <h3>{pedido.cliente?.nombre || 'Sin cliente'}</h3>
-                      {pedido.cliente?.direccion && (
-                        <span className="reparto-direccion">{pedido.cliente.direccion}</span>
-                      )}
+              <>
+                {/* Columna Pendientes */}
+                {data.stats.pendientes > 0 && (
+                  <div className="reparto-columna columna-pendientes">
+                    <div className="columna-titulo">
+                      <h2>Por Preparar</h2>
+                      <span className="columna-badge">{data.stats.pendientes}</span>
                     </div>
-                    <span className={`badge ${getEstadoBadge(pedido.estado)}`}>
-                      {getEstadoLabel(pedido.estado)}
-                    </span>
-                  </div>
-
-                  <div className="reparto-productos">
-                    {pedido.detalles?.map(d => (
-                      <span key={d.id} className="producto-tag">
-                        {d.cantidad} {d.producto?.unidad} {d.producto?.nombre}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="reparto-footer">
-                    <div className="reparto-repartidor">
-                      {pedido.repartidor ? (
-                        <span>{pedido.repartidor.nombre}</span>
-                      ) : (
-                        <span className="sin-asignar">Sin repartidor</span>
-                      )}
-                    </div>
-                    <div className="reparto-total">
-                      {formatMoney(pedido.total)}
+                    <div className="columna-lista">
+                      {data.pedidos.filter(p => p.estado === 'pendiente').map(pedido => (
+                        <RepartoCard key={pedido.id} pedido={pedido} formatMoney={formatMoney} />
+                      ))}
                     </div>
                   </div>
+                )}
 
-                  {pedido.notas && (
-                    <div className="reparto-notas">{pedido.notas}</div>
-                  )}
-                </div>
-              ))
+                {/* Columna Preparados */}
+                {data.stats.preparados > 0 && (
+                  <div className="reparto-columna columna-preparados">
+                    <div className="columna-titulo">
+                      <h2>Preparados</h2>
+                      <span className="columna-badge">{data.stats.preparados}</span>
+                    </div>
+                    <div className="columna-lista">
+                      {data.pedidos.filter(p => p.estado === 'preparado').map(pedido => (
+                        <RepartoCard key={pedido.id} pedido={pedido} formatMoney={formatMoney} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Columna En Camino */}
+                {data.stats.enCamino > 0 && (
+                  <div className="reparto-columna columna-en-camino">
+                    <div className="columna-titulo">
+                      <h2>En Camino</h2>
+                      <span className="columna-badge">{data.stats.enCamino}</span>
+                    </div>
+                    <div className="columna-lista">
+                      {data.pedidos.filter(p => p.estado === 'en_camino').map(pedido => (
+                        <RepartoCard key={pedido.id} pedido={pedido} formatMoney={formatMoney} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </>
@@ -160,6 +166,46 @@ function RepartosPendientes() {
         <div className="refresh-indicator">
           Actualizando cada 30 segundos
         </div>
+      )}
+    </div>
+  );
+}
+
+function RepartoCard({ pedido, formatMoney }) {
+  return (
+    <div className={`reparto-card estado-${pedido.estado}`}>
+      <div className="reparto-header">
+        <div className="reparto-cliente">
+          <h3>{pedido.cliente?.nombre || 'Sin cliente'}</h3>
+          {pedido.cliente?.direccion && (
+            <span className="reparto-direccion">{pedido.cliente.direccion}</span>
+          )}
+        </div>
+      </div>
+
+      <div className="reparto-productos">
+        {pedido.detalles?.map(d => (
+          <span key={d.id} className="producto-tag">
+            {d.cantidad} {d.producto?.unidad} {d.producto?.nombre}
+          </span>
+        ))}
+      </div>
+
+      <div className="reparto-footer">
+        <div className="reparto-repartidor">
+          {pedido.repartidor ? (
+            <span>{pedido.repartidor.nombre}</span>
+          ) : (
+            <span className="sin-asignar">Sin repartidor</span>
+          )}
+        </div>
+        <div className="reparto-total">
+          {formatMoney(pedido.total)}
+        </div>
+      </div>
+
+      {pedido.notas && (
+        <div className="reparto-notas">{pedido.notas}</div>
       )}
     </div>
   );

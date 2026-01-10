@@ -287,7 +287,7 @@ function Pedidos() {
           <p className="empty-message">No hay pedidos para esta fecha</p>
         ) : (
           pedidos.map(pedido => (
-            <div key={pedido.id} className={`pedido-card card estado-${pedido.estado}`}>
+            <div key={pedido.id} className={`pedido-card estado-${pedido.estado}`}>
               <div className="pedido-header">
                 <div className="pedido-info">
                   <h3>{pedido.cliente?.nombre || 'Sin cliente'}</h3>

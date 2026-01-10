@@ -1,3 +1,10 @@
+/* Asegurar que todo el contenido de Pedidos sea visible */
+.page {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
 .page-header-actions {
   display: flex;
   gap: var(--spacing-2);
@@ -7,27 +14,27 @@
 .pedidos-resumen {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: var(--spacing-3);
-  margin-bottom: var(--spacing-4);
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
 }
 
 .resumen-card {
   background: var(--color-white);
   border-radius: var(--border-radius);
-  padding: var(--spacing-3);
+  padding: var(--spacing-2);
   text-align: center;
   box-shadow: var(--shadow);
 }
 
 .resumen-label {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--color-gray-500);
-  margin-bottom: var(--spacing-1);
+  margin-bottom: 2px;
 }
 
 .resumen-value {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
   font-weight: 700;
 }
 
@@ -49,23 +56,46 @@
 
 .pedidos-filtros {
   display: flex;
-  gap: var(--spacing-4);
-  margin-bottom: var(--spacing-4);
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-3);
   flex-wrap: wrap;
+  align-items: flex-end;
 }
 
 .pedidos-filtros .form-group {
-  min-width: 150px;
+  min-width: 130px;
+  margin-bottom: 0;
+}
+
+.pedidos-filtros .form-label {
+  margin-bottom: 2px;
+  font-size: var(--font-size-xs);
+}
+
+.pedidos-filtros .form-input {
+  padding: var(--spacing-2);
 }
 
 .pedidos-lista {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3);
+  padding-bottom: var(--spacing-6);
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
 }
 
-.pedido-card {
+.pedidos-lista > .pedido-card {
   border-left: 4px solid var(--color-gray-300);
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  padding: var(--spacing-4);
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: auto !important;
 }
 
 .pedido-card.estado-pendiente {
@@ -159,6 +189,12 @@
 .pedido-actions {
   display: flex;
   gap: var(--spacing-2);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-2);
+}
+
+.pedido-actions .btn {
+  white-space: nowrap;
 }
 
 /* Modal para pedidos */
@@ -437,5 +473,49 @@
 
   .nuevo-cliente-form .form-row {
     flex-direction: column;
+  }
+
+  .pedido-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-2);
+  }
+
+  .pedido-actions .btn {
+    padding: var(--spacing-2);
+    font-size: var(--font-size-sm);
+  }
+
+  .pedido-header {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .pedido-total {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .pedidos-resumen {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-2);
+  }
+
+  .resumen-card {
+    padding: var(--spacing-2);
+  }
+
+  .resumen-value {
+    font-size: var(--font-size-lg);
+  }
+
+  .pedido-actions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .pedido-actions .btn {
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-xs);
   }
 }

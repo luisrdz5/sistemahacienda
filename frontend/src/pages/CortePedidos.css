@@ -210,6 +210,136 @@
   margin: 0;
 }
 
+/* Columnas de estado estilo Kanban */
+.columnas-estado-grid {
+  display: flex;
+  gap: var(--spacing-4);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-2);
+}
+
+.columna-estado {
+  flex: 1;
+  min-width: 250px;
+  max-width: 350px;
+  background: var(--color-gray-50);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-3);
+}
+
+.columna-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-3);
+  padding-bottom: var(--spacing-2);
+  border-bottom: 2px solid var(--color-gray-200);
+}
+
+.columna-header h3 {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.columna-count {
+  background: var(--color-gray-200);
+  color: var(--color-gray-700);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.columna-warning .columna-header {
+  border-bottom-color: var(--color-warning);
+}
+
+.columna-warning .columna-count {
+  background: var(--color-warning);
+  color: white;
+}
+
+.columna-preparado .columna-header {
+  border-bottom-color: #0891b2;
+}
+
+.columna-preparado .columna-count {
+  background: #0891b2;
+  color: white;
+}
+
+.columna-info .columna-header {
+  border-bottom-color: var(--color-primary);
+}
+
+.columna-info .columna-count {
+  background: var(--color-primary);
+  color: white;
+}
+
+.columna-success .columna-header {
+  border-bottom-color: var(--color-success);
+}
+
+.columna-success .columna-count {
+  background: var(--color-success);
+  color: white;
+}
+
+.columna-pedidos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.pedido-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-1);
+}
+
+.pedido-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-2);
+}
+
+.pago-badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: var(--border-radius-full);
+  font-weight: 600;
+}
+
+.pago-badge.pagado {
+  background: var(--color-success);
+  color: white;
+}
+
+.pago-badge.pendiente {
+  background: var(--color-warning);
+  color: white;
+}
+
+.saldo-pendiente {
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+.badge-preparado {
+  background-color: #0891b2;
+  color: white;
+}
+
+.badge-info {
+  background-color: var(--color-primary);
+  color: white;
+}
+
 @media (max-width: 768px) {
   .corte-stats {
     grid-template-columns: repeat(2, 1fr);
@@ -222,5 +352,14 @@
 
   .pedido-total {
     text-align: right;
+  }
+
+  .columnas-estado-grid {
+    flex-direction: column;
+  }
+
+  .columna-estado {
+    min-width: 100%;
+    max-width: 100%;
   }
 }
