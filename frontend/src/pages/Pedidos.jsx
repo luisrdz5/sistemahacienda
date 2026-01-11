@@ -51,7 +51,11 @@ function Pedidos() {
       setClientes(clientesData);
       setProductos(productosData);
       setRepartidores(repartidoresData);
-      setSucursales(sucursalesData.filter(s => !s.esVirtual));
+      // Filtrar sucursales virtuales y las de solo captura de datos
+      const sucursalesExcluidas = ['nomina', 'ahorro', 'gastos globales'];
+      setSucursales(sucursalesData.filter(s =>
+        !s.esVirtual && !sucursalesExcluidas.includes(s.nombre.toLowerCase())
+      ));
     } catch (error) {
       console.error('Error:', error);
     }
@@ -178,7 +182,7 @@ function Pedidos() {
   }
 
   return (
-    <div className="page">
+    <div className="page page-pedidos">
       <div className="page-header">
         <h1 className="page-title">Pedidos</h1>
         <div className="page-header-actions">
@@ -337,27 +341,14 @@ function Pedidos() {
               )}
 
               <div className="pedido-actions">
+                {/* Pendiente: solo puede Preparar */}
                 {pedido.estado === 'pendiente' && (
                   <>
-                    {canEdit && (
-                      <button
-                        className="btn btn-preparado btn-sm"
-                        onClick={() => handlePreparar(pedido)}
-                      >
-                        Preparar
-                      </button>
-                    )}
                     <button
-                      className="btn btn-info btn-sm"
-                      onClick={() => handleDespachar(pedido)}
+                      className="btn btn-preparado btn-sm"
+                      onClick={() => handlePreparar(pedido)}
                     >
-                      Despachar
-                    </button>
-                    <button
-                      className="btn btn-success btn-sm"
-                      onClick={() => handleEntregar(pedido)}
-                    >
-                      Entregar
+                      Preparar
                     </button>
                     {canEdit && (
                       <button
@@ -377,22 +368,16 @@ function Pedidos() {
                     )}
                   </>
                 )}
+                {/* Preparado: solo puede Despachar */}
                 {pedido.estado === 'preparado' && (
-                  <>
-                    <button
-                      className="btn btn-info btn-sm"
-                      onClick={() => handleDespachar(pedido)}
-                    >
-                      Despachar
-                    </button>
-                    <button
-                      className="btn btn-success btn-sm"
-                      onClick={() => handleEntregar(pedido)}
-                    >
-                      Entregar
-                    </button>
-                  </>
+                  <button
+                    className="btn btn-info btn-sm"
+                    onClick={() => handleDespachar(pedido)}
+                  >
+                    Despachar
+                  </button>
                 )}
+                {/* En Camino: solo puede Entregar */}
                 {pedido.estado === 'en_camino' && (
                   <button
                     className="btn btn-success btn-sm"
@@ -460,9 +445,13 @@ function Pedidos() {
 }
 
 function PedidoForm({ pedido, clientes, productos, repartidores, sucursales, onSubmit, onClose, onClienteCreated }) {
+  // Buscar sucursal Hacienda para usar como default
+  const sucursalHacienda = sucursales.find(s => s.nombre.toLowerCase().includes('hacienda'));
+  const defaultSucursalId = pedido?.sucursalId || sucursalHacienda?.id || '';
+
   const [clienteId, setClienteId] = useState(pedido?.clienteId || '');
   const [repartidorId, setRepartidorId] = useState(pedido?.repartidorId || '');
-  const [sucursalId, setSucursalId] = useState(pedido?.sucursalId || '');
+  const [sucursalId, setSucursalId] = useState(defaultSucursalId);
   const [notas, setNotas] = useState(pedido?.notas || '');
   const [detalles, setDetalles] = useState([]);
   const [loading, setLoading] = useState(false);

@@ -18,20 +18,7 @@ const HistorialPedido = sequelize.define('HistorialPedido', {
     field: 'usuario_id'
   },
   accion: {
-    type: DataTypes.ENUM(
-      'creado',
-      'editado',
-      'estado_pendiente',
-      'estado_preparado',
-      'estado_en_camino',
-      'estado_entregado',
-      'estado_cancelado',
-      'repartidor_asignado',
-      'repartidor_cambiado',
-      'pago_registrado',
-      'abono_registrado',
-      'nota_agregada'
-    ),
+    type: DataTypes.STRING(50),
     allowNull: false
   },
   descripcion: {

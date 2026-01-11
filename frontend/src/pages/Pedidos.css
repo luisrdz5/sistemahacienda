@@ -1,5 +1,5 @@
-/* Asegurar que todo el contenido de Pedidos sea visible */
-.page {
+/* Estilos específicos para la página de Pedidos */
+.page-pedidos {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
